@@ -1,4 +1,13 @@
-"""Linear-programming solver for finite zero-sum games."""
+"""Mixed-strategy solver for finite zero-sum games.
+
+This is the orchestration layer on top of :mod:`game_theory.linear_programming`.
+It solves both the row-player and column-player linear programs, cross-checks
+that their optimal objective values agree (LP strong duality => a genuine
+saddle point was found), and packages the result.
+
+The solver is fully general: it accepts any ``m x n`` payoff matrix, not just
+square or ``2 x 2`` games.
+"""
 
 from __future__ import annotations
 
@@ -6,99 +15,57 @@ from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
-from scipy.optimize import linprog
+
+from .linear_programming import as_payoff_matrix, solve_column_player, solve_row_player
+
+__all__ = ["MixedStrategySolution", "solve_zero_sum_game"]
+
+# Row-player and column-player LP objectives must match to this tolerance.
+_DUALITY_ATOL = 1e-6
 
 
 @dataclass(frozen=True)
 class MixedStrategySolution:
-    """Primal solution for the row and column players."""
+    """Optimal mixed strategies and value of a zero-sum game.
+
+    ``shooter_strategy`` maximises the guaranteed expected score; the
+    goalkeeper's payoff is ``-A`` so ``goalkeeper_strategy`` minimises it.
+    ``game_value`` is ``v = p^T A q`` under optimal play.
+    """
 
     shooter_strategy: np.ndarray
     goalkeeper_strategy: np.ndarray
     game_value: float
 
 
-def _as_square_matrix(matrix: np.ndarray | Any) -> np.ndarray:
-    values = np.asarray(matrix, dtype=float)
-    if values.ndim != 2:
-        raise ValueError("Payoff matrix must be two-dimensional.")
-    rows, cols = values.shape
-    if rows == 0 or cols == 0:
-        raise ValueError("Payoff matrix cannot be empty.")
-    if rows != cols:
-        raise ValueError("Phase 1 uses square n x n zero-sum games.")
-    return values
-
-
-def _normalize_strategy(strategy: np.ndarray, atol: float = 1e-12) -> np.ndarray:
-    clipped = np.clip(np.asarray(strategy, dtype=float), 0.0, None)
-    total = float(clipped.sum())
-    if total <= atol:
-        raise ValueError("Solver returned an invalid probability vector.")
-    return clipped / total
-
-
-def _solve_row_player(matrix: np.ndarray) -> tuple[np.ndarray, float]:
-    n = matrix.shape[0]
-    c = np.zeros(n + 1, dtype=float)
-    c[-1] = -1.0
-
-    # Minimize -v subject to A^T p >= v 1, sum(p) = 1, p >= 0.
-    # This is the LP form of max_p min_q p^T A q from the minimax theorem.
-    a_ub = np.hstack([-matrix.T, np.ones((n, 1), dtype=float)])
-    b_ub = np.zeros(n, dtype=float)
-    a_eq = np.zeros((1, n + 1), dtype=float)
-    a_eq[0, :n] = 1.0
-    b_eq = np.array([1.0], dtype=float)
-    bounds = [(0.0, None)] * n + [(None, None)]
-
-    result = linprog(c, A_ub=a_ub, b_ub=b_ub, A_eq=a_eq, b_eq=b_eq, bounds=bounds, method="highs")
-    if not result.success:
-        raise RuntimeError(f"Shooter LP failed: {result.message}")
-
-    strategy = _normalize_strategy(result.x[:n])
-    game_value = float(result.x[-1])
-    return strategy, game_value
-
-
-def _solve_column_player(matrix: np.ndarray) -> tuple[np.ndarray, float]:
-    n = matrix.shape[0]
-    c = np.zeros(n + 1, dtype=float)
-    c[-1] = 1.0
-
-    # Minimize w subject to A q <= w 1, sum(q) = 1, q >= 0.
-    # This is the dual LP corresponding to the same saddle-point value.
-    a_ub = np.hstack([matrix, -np.ones((n, 1), dtype=float)])
-    b_ub = np.zeros(n, dtype=float)
-    a_eq = np.zeros((1, n + 1), dtype=float)
-    a_eq[0, :n] = 1.0
-    b_eq = np.array([1.0], dtype=float)
-    bounds = [(0.0, None)] * n + [(None, None)]
-
-    result = linprog(c, A_ub=a_ub, b_ub=b_ub, A_eq=a_eq, b_eq=b_eq, bounds=bounds, method="highs")
-    if not result.success:
-        raise RuntimeError(f"Goalkeeper LP failed: {result.message}")
-
-    strategy = _normalize_strategy(result.x[:n])
-    game_value = float(result.x[-1])
-    return strategy, game_value
-
-
 def solve_zero_sum_game(matrix: np.ndarray | Any) -> MixedStrategySolution:
-    """Solve a finite zero-sum matrix game using linear programming."""
+    """Solve a finite zero-sum matrix game by linear programming.
 
-    values = _as_square_matrix(matrix)
-    shooter_strategy, shooter_value = _solve_row_player(values)
-    goalkeeper_strategy, goalkeeper_value = _solve_column_player(values)
+    Raises
+    ------
+    ValueError
+        If ``matrix`` is not a finite 2-D array.
+    RuntimeError
+        If either linear program fails or the two objective values disagree
+        beyond :data:`_DUALITY_ATOL` (which would mean the numerics are
+        untrustworthy).
+    """
 
-    if not np.isclose(shooter_value, goalkeeper_value, atol=1e-7):
+    values = as_payoff_matrix(matrix)
+
+    row_result = solve_row_player(values)
+    column_result = solve_column_player(values)
+
+    if not np.isclose(row_result.value, column_result.value, atol=_DUALITY_ATOL):
         raise RuntimeError(
-            "Primal and dual LP values differ beyond tolerance: "
-            f"{shooter_value:.12f} vs {goalkeeper_value:.12f}."
+            "Row-player and column-player LP values disagree: "
+            f"{row_result.value:.12f} vs {column_result.value:.12f}. "
+            "The minimax solution is numerically unreliable for this matrix."
         )
 
+    game_value = 0.5 * (row_result.value + column_result.value)
     return MixedStrategySolution(
-        shooter_strategy=shooter_strategy,
-        goalkeeper_strategy=goalkeeper_strategy,
-        game_value=float((shooter_value + goalkeeper_value) / 2.0),
+        shooter_strategy=row_result.strategy,
+        goalkeeper_strategy=column_result.strategy,
+        game_value=float(game_value),
     )

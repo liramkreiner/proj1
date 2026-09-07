@@ -11,7 +11,7 @@ from agents.base_agent import BaseAgent
 from game.models import GameResult, GoalZone, MatchOutcome, MatchStatistics, PayoffMatrix
 
 
-def _validate_probability_distribution(probabilities: Sequence[float], *, atol: float = 1e-8) -> np.ndarray:
+def validate_probability_distribution(probabilities: Sequence[float], *, atol: float = 1e-8) -> np.ndarray:
     values = np.asarray(probabilities, dtype=float)
     if values.ndim != 1:
         raise ValueError("Probability distribution must be one-dimensional.")
@@ -34,7 +34,7 @@ class ProbabilitySampler:
         return self._rng
 
     def choice(self, actions: Sequence[GoalZone], probabilities: Sequence[float]) -> GoalZone:
-        validated = _validate_probability_distribution(probabilities)
+        validated = validate_probability_distribution(probabilities)
         if len(actions) == 0:
             raise ValueError("At least one action is required for sampling.")
         index = int(self._rng.choice(len(actions), p=validated))

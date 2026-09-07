@@ -36,6 +36,7 @@ class MatchController:
     role: str = "Shooter"
     total_rounds: int = 5
     seed: int | None = None
+    payoff_matrix_override: PayoffMatrix | None = None
     _rng: np.random.Generator = field(init=False, repr=False)
     _engine: PenaltyShootoutEngine = field(init=False, repr=False)
     _ai_shooter: OptimalAgent = field(init=False, repr=False)
@@ -52,8 +53,12 @@ class MatchController:
 
     def __post_init__(self) -> None:
         self._rng = np.random.default_rng(self.seed)
-        self._payoff_matrix = build_default_penalty_payoff_matrix()
-        self._equilibrium = solve_nash_equilibrium(self._payoff_matrix.values)
+        self._payoff_matrix = self.payoff_matrix_override or build_default_penalty_payoff_matrix()
+        self._equilibrium = solve_nash_equilibrium(
+            self._payoff_matrix.values,
+            row_labels=self._payoff_matrix.row_labels,
+            column_labels=self._payoff_matrix.column_labels,
+        )
         self._engine = PenaltyShootoutEngine(self._payoff_matrix, rng=self._rng)
         self._ai_shooter = OptimalAgent(self._equilibrium.shooter_strategy)
         self._ai_goalkeeper = OptimalAgent(self._equilibrium.goalkeeper_strategy)

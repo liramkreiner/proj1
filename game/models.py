@@ -87,8 +87,8 @@ class PayoffMatrix:
         rows, cols = values.shape
         if rows == 0 or cols == 0:
             raise ValueError("Payoff matrix cannot be empty.")
-        if rows != cols:
-            raise ValueError("Phase 1 uses square n x n zero-sum games.")
+        if np.any(values < 0.0) or np.any(values > 1.0):
+            raise ValueError("Scoring probabilities must lie in [0, 1].")
         if len(self.row_labels) != rows or len(self.column_labels) != cols:
             raise ValueError("Matrix labels must match the matrix shape.")
         object.__setattr__(self, "values", values)

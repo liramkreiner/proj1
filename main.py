@@ -1,87 +1,50 @@
-"""Desktop entry point and optional console demo for the penalty simulator."""
+"""Command-line entry point for the Tactical Penalty Shootout Simulator.
+
+Usage
+-----
+    python main.py demo              # run the Phase 1 game-theory console demo
+    python main.py serve             # start the web application (FastAPI + built UI)
+    python main.py serve --port 9000 --host 0.0.0.0 --reload
+
+The web UI is served by the FastAPI app in ``web.backend.app``.  Build the
+front-end first with ``npm --prefix web/frontend install && npm --prefix
+web/frontend run build`` (or use the provided Dockerfile, which does it).
+"""
 
 from __future__ import annotations
 
 import argparse
-import numpy as np
-
-from PyQt6.QtWidgets import QApplication
-
-from game.payoff_matrix import build_default_penalty_payoff_matrix
-from game_theory.minimax import analyze_pure_strategies
-from game_theory.nash_equilibrium import solve_nash_equilibrium
-from ui.main_window import MainWindow
-from ui.styles import APP_STYLE
 
 
-def _format_matrix(values: np.ndarray) -> str:
-    return np.array2string(values, precision=3, floatmode="fixed")
+def _run_demo() -> None:
+    from demo import main as demo_main
+
+    demo_main()
 
 
-def _format_strategy(labels: tuple[str, ...], probabilities: np.ndarray) -> str:
-    lines = [f"  {label}: {probability:.3%}" for label, probability in zip(labels, probabilities, strict=True)]
-    return "\n".join(lines)
+def _run_server(host: str, port: int, reload: bool) -> None:
+    import uvicorn
 
-
-def run_example(name: str, matrix: np.ndarray, row_labels: tuple[str, ...], column_labels: tuple[str, ...]) -> None:
-    print(f"\n=== {name} ===")
-    print("Payoff matrix (shooter perspective):")
-    print(_format_matrix(matrix))
-
-    pure_analysis = analyze_pure_strategies(matrix)
-    equilibrium = solve_nash_equilibrium(matrix)
-
-    print(f"Maximin: {pure_analysis.maximin:.6f}")
-    print(f"Minimax: {pure_analysis.minimax:.6f}")
-    print("Shooter optimal strategy:")
-    print(_format_strategy(row_labels, equilibrium.shooter_strategy.probabilities))
-    print("Goalkeeper optimal strategy:")
-    print(_format_strategy(column_labels, equilibrium.goalkeeper_strategy.probabilities))
-    print(f"Game value: {equilibrium.game_value:.6f}")
-    print("Equilibrium validation:")
-    for message in equilibrium.validation.messages:
-        print(f"  - {message}")
+    uvicorn.run("web.backend.app:app", host=host, port=port, reload=reload)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Tactical Penalty Shootout Simulator")
-    parser.add_argument("--demo", action="store_true", help="Run the console math demo instead of the GUI.")
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    sub.add_parser("demo", help="Run the console game-theory demonstration.")
+
+    serve = sub.add_parser("serve", help="Run the web application.")
+    serve.add_argument("--host", default="127.0.0.1")
+    serve.add_argument("--port", type=int, default=8000)
+    serve.add_argument("--reload", action="store_true", help="Auto-reload on code changes (development).")
+
     args = parser.parse_args()
 
-    if args.demo:
-        run_demo()
-        return
-
-    app = QApplication([])
-    app.setStyleSheet(APP_STYLE)
-    window = MainWindow()
-    window.show()
-    app.exec()
-
-
-def run_demo() -> None:
-    matching_pennies = np.array([[1.0, -1.0], [-1.0, 1.0]], dtype=float)
-    non_uniform_game = np.array([[4.0, 0.0], [2.0, 3.0]], dtype=float)
-    penalty_matrix = build_default_penalty_payoff_matrix()
-
-    run_example(
-        "Matching Pennies",
-        matching_pennies,
-        ("Heads", "Tails"),
-        ("Heads", "Tails"),
-    )
-    run_example(
-        "Non-uniform Zero-Sum Game",
-        non_uniform_game,
-        ("Row 1", "Row 2"),
-        ("Column 1", "Column 2"),
-    )
-    run_example(
-        "Penalty Shootout Matrix",
-        penalty_matrix.values,
-        penalty_matrix.row_labels,
-        penalty_matrix.column_labels,
-    )
+    if args.command == "demo":
+        _run_demo()
+    elif args.command == "serve":
+        _run_server(args.host, args.port, args.reload)
 
 
 if __name__ == "__main__":

@@ -13,8 +13,8 @@ def _as_matrix(matrix: np.ndarray | Any) -> np.ndarray:
     values = np.asarray(matrix, dtype=float)
     if values.ndim != 2:
         raise ValueError("Matrix must be two-dimensional.")
-    if values.shape[0] != values.shape[1]:
-        raise ValueError("Phase 1 uses square n x n games.")
+    if values.size == 0:
+        raise ValueError("Matrix cannot be empty.")
     return values
 
 
