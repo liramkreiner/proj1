@@ -7,7 +7,7 @@ import PlayTab from './components/PlayTab'
 import SimulationTab from './components/SimulationTab'
 
 const TABS = [
-  { id: 'play', label: 'The duel' },
+  { id: 'play', label: 'Shootout' },
   { id: 'dashboard', label: 'Game theory' },
   { id: 'simulation', label: 'Simulation' },
   { id: 'experiment', label: 'Experiment' },

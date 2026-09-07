@@ -12,7 +12,9 @@ No numerical computation lives here beyond trivial list/array conversion.
 from __future__ import annotations
 
 import sys
+import threading
 import uuid
+from functools import lru_cache
 from pathlib import Path
 
 import numpy as np
@@ -57,6 +59,22 @@ FRONTEND_DIST = REPO_ROOT / "web" / "frontend" / "dist"
 
 ZONE_LABELS = tuple(zone.label for zone in GoalZone.ordered())
 
+# scipy's HiGHS backend is not re-entrant; FastAPI runs sync endpoints in a
+# threadpool, so two overlapping requests could call linprog concurrently and
+# crash the process. Serialise every solve, and memoise the (common) default.
+_solver_lock = threading.Lock()
+
+
+def _solve(matrix: np.ndarray, row_labels, column_labels) -> EquilibriumResult:
+    with _solver_lock:
+        return solve_nash_equilibrium(matrix, row_labels=row_labels, column_labels=column_labels)
+
+
+@lru_cache(maxsize=1)
+def _default_equilibrium() -> EquilibriumResult:
+    payoff = build_default_penalty_payoff_matrix()
+    return _solve(payoff.values, payoff.row_labels, payoff.column_labels)
+
 
 # --------------------------------------------------------------------------- #
 # Domain <-> schema helpers
@@ -88,10 +106,8 @@ def _strategy_entries(labels: tuple[str, ...], probabilities: np.ndarray) -> lis
 
 
 def _equilibrium_response(payoff_matrix: PayoffMatrix) -> schemas.EquilibriumResponse:
-    equilibrium: EquilibriumResult = solve_nash_equilibrium(
-        payoff_matrix.values,
-        row_labels=payoff_matrix.row_labels,
-        column_labels=payoff_matrix.column_labels,
+    equilibrium: EquilibriumResult = _solve(
+        payoff_matrix.values, payoff_matrix.row_labels, payoff_matrix.column_labels
     )
     analysis = equilibrium.pure_strategy_analysis
     validation = equilibrium.validation
@@ -203,16 +219,12 @@ def analyze_matrix(payload: schemas.MatrixPayload) -> schemas.EquilibriumRespons
 def take_penalty(payload: schemas.PenaltyRequest) -> schemas.PenaltyResult:
     """One shot, one save. The AI samples its zone from the equilibrium mix."""
 
-    payoff_matrix = (
-        _payoff_matrix_from_values(payload.values)
-        if payload.values is not None
-        else build_default_penalty_payoff_matrix()
-    )
-    equilibrium = solve_nash_equilibrium(
-        payoff_matrix.values,
-        row_labels=payoff_matrix.row_labels,
-        column_labels=payoff_matrix.column_labels,
-    )
+    if payload.values is not None:
+        payoff_matrix = _payoff_matrix_from_values(payload.values)
+        equilibrium = _solve(payoff_matrix.values, payoff_matrix.row_labels, payoff_matrix.column_labels)
+    else:
+        payoff_matrix = build_default_penalty_payoff_matrix()
+        equilibrium = _default_equilibrium()
 
     user_index = ZONE_LABELS.index(_zone_from_text(payload.zone).label)
     rng = np.random.default_rng(payload.seed)
@@ -243,16 +255,12 @@ def take_penalty(payload: schemas.PenaltyRequest) -> schemas.PenaltyResult:
 def simulate(payload: schemas.SimulateRequest) -> schemas.SimulateResponse:
     """Monte Carlo: both players sample their equilibrium mixed strategies."""
 
-    payoff_matrix = (
-        _payoff_matrix_from_values(payload.values)
-        if payload.values is not None
-        else build_default_penalty_payoff_matrix()
-    )
-    equilibrium = solve_nash_equilibrium(
-        payoff_matrix.values,
-        row_labels=payoff_matrix.row_labels,
-        column_labels=payoff_matrix.column_labels,
-    )
+    if payload.values is not None:
+        payoff_matrix = _payoff_matrix_from_values(payload.values)
+        equilibrium = _solve(payoff_matrix.values, payoff_matrix.row_labels, payoff_matrix.column_labels)
+    else:
+        payoff_matrix = build_default_penalty_payoff_matrix()
+        equilibrium = _default_equilibrium()
     p = equilibrium.shooter_strategy.probabilities
     q = equilibrium.goalkeeper_strategy.probabilities
 
