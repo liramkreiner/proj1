@@ -1,25 +1,27 @@
 import { useMemo } from 'react'
 
 /*
- * Cinematic penalty scene, drawn entirely in SVG so it ships inside the
- * single Docker image with no external assets or licences.
+ * The board: the penalty drawn in chalk on turf, from behind the spot.
+ * Everything is inline SVG so it ships in the single Docker image with no
+ * external art. The shot is the only thing that animates.
  *
- * Contract (all motion is CSS transition on the group `transform`):
- *   phase     : 'idle' | 'windup' | 'flight' | 'result'
- *   shotZone  : zone key the ball travels to   (null until known)
- *   diveZone  : zone key the keeper commits to (null until known)
- *   scored    : boolean | null                 (only meaningful at 'result')
+ * Contract:
+ *   phase    : 'idle' | 'windup' | 'flight' | 'result'
+ *   shotZone : zone key the ball travels to   (null until 'flight')
+ *   diveZone : zone key the keeper commits to (null until 'flight')
+ *   scored   : boolean | null                 (meaningful at 'result')
  */
 
 const VB_W = 900
-const VB_H = 560
-const MOUTH = { L: 250, R: 650, T: 118, B: 330 }
+const VB_H = 486
+const MOUTH = { L: 198, R: 702, T: 124, B: 366 }
 const COLS = 3
 const ROWS = 2
 const CELL_W = (MOUTH.R - MOUTH.L) / COLS
 const CELL_H = (MOUTH.B - MOUTH.T) / ROWS
-const SPOT = { x: 450, y: 486 }
-const KEEPER_Y = 300
+const SPOT = { x: 450, y: 440 }
+const KEEPER_X = 450
+const KEEPER_FEET = MOUTH.B - 4
 
 function cell(row, col) {
   const x = MOUTH.L + col * CELL_W
@@ -27,104 +29,69 @@ function cell(row, col) {
   return { x, y, w: CELL_W, h: CELL_H, cx: x + CELL_W / 2, cy: y + CELL_H / 2 }
 }
 
-// Deterministic crowd so the stands never reflow between renders.
-function buildCrowd() {
-  let s = 20260907
-  const rnd = () => ((s = (s * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff)
-  const palette = ['#d15b5b', '#5b78d1', '#d8c65a', '#e9e9ef', '#5fae72', '#e0954a', '#b0b6c6']
-  const tiers = [
-    { y0: 34, y1: 132, jitter: 5 },
-    { y0: 132, y1: 224, jitter: 4 },
-    { y0: 224, y1: 300, jitter: 3 },
-  ]
-  const dots = []
-  for (let i = 0; i < 560; i += 1) {
-    const tier = tiers[Math.floor(rnd() * tiers.length)]
-    dots.push({
-      x: rnd() * VB_W,
-      y: tier.y0 + rnd() * (tier.y1 - tier.y0),
-      r: 1.5 + rnd() * (tier.jitter - 1),
-      c: palette[Math.floor(rnd() * palette.length)],
-      o: 0.35 + rnd() * 0.5,
-    })
+// The keeper commits to a SIDE — left, right, or stays central. High vs low
+// only changes how high the dive is, never a hop to an arbitrary square.
+function keeperPose(diveZone) {
+  if (!diveZone) return { tx: KEEPER_X, ty: KEEPER_FEET, diving: false, side: 0, high: false }
+  const side = diveZone.col === 0 ? -1 : diveZone.col === 2 ? 1 : 0
+  const high = diveZone.row === 0
+  if (side === 0) {
+    return { tx: KEEPER_X, ty: KEEPER_FEET - (high ? 16 : 0), diving: true, side: 0, high }
   }
-  return dots
+  return { tx: KEEPER_X + side * 138, ty: KEEPER_FEET - (high ? 40 : 8), diving: true, side, high }
 }
 
 function Keeper({ diveZone }) {
-  let tx = 0
-  let angle = 0
-  let reach = 0
-  if (diveZone) {
-    const target = cell(diveZone.row, diveZone.col)
-    tx = target.cx - SPOT.x
-    const side = diveZone.col === 0 ? -1 : diveZone.col === 2 ? 1 : 0
-    angle = side * 62
-    reach = side * 14
-    if (side === 0) angle = diveZone.row === 0 ? -10 : 6
-  }
+  const { tx, ty, diving, side, high } = keeperPose(diveZone)
   return (
-    <g
-      className="gk"
-      style={{ transform: `translate(${SPOT.x + tx * 0.62}px, ${KEEPER_Y}px) rotate(${angle}deg)` }}
-    >
-      <ellipse className="gk-blur" cx={reach * -3} cy={4} rx={diveZone ? 46 : 0} ry="14" />
-      {/* legs */}
-      <path d="M-9 6 L-13 40 -4 40 -2 8 Z" fill="#1f2937" />
-      <path d="M9 6 L13 40 4 40 2 8 Z" fill="#111827" />
-      {/* jersey */}
-      <path d="M-19 -34 Q0 -42 19 -34 L16 10 Q0 16 -16 10 Z" fill="#e23b3b" />
-      <path d="M-19 -34 Q0 -42 19 -34 L17 -24 Q0 -32 -17 -24 Z" fill="#b52a2a" />
-      <text x="0" y="-6" textAnchor="middle" className="gk-number">1</text>
-      {/* arms + gloves */}
-      <g className="gk-arm gk-arm-l">
-        <path d="M-17 -30 q-20 4 -30 20" stroke="#e23b3b" strokeWidth="8" fill="none" strokeLinecap="round" />
-        <rect x={-52} y={-16} width="14" height="16" rx="4" fill="#f4d35e" stroke="#caa93b" />
-      </g>
-      <g className="gk-arm gk-arm-r">
-        <path d="M17 -30 q20 4 30 20" stroke="#e23b3b" strokeWidth="8" fill="none" strokeLinecap="round" />
-        <rect x={38} y={-16} width="14" height="16" rx="4" fill="#f4d35e" stroke="#caa93b" />
-      </g>
-      {/* head */}
-      <circle cx="0" cy="-46" r="11" fill="#e8b98f" />
-      <path d="M-11 -49 a11 11 0 0 1 22 0 q-11 -6 -22 0Z" fill="#3a2a20" />
+    <g className={`gk ${diving ? 'gk--diving' : ''}`} style={{ transform: `translate(${tx}px, ${ty}px)` }}>
+      <ellipse className="gk-streak" cx={-side * 48} cy={-28} rx={side ? 78 : 0} ry="12" />
+      {side === 0 ? (
+        // standing: ready crouch, a touch taller for a high ball
+        <g style={{ transform: `translateY(${high ? -8 : 0}px)` }}>
+          <path className="gk-line" d="M0 -2 L-14 42 M0 -2 L14 42" />
+          <path className="gk-line" d="M0 -2 L0 -44" />
+          <path className="gk-line gk-arms" d={high ? 'M0 -40 L-24 -66 M0 -40 L24 -66' : 'M0 -38 L-32 -18 M0 -38 L32 -18'} />
+          <circle className="gk-head" cx="0" cy="-56" r="11" />
+        </g>
+      ) : (
+        // full-length dive toward the near post: body near horizontal, gloves leading.
+        // Figure is drawn reaching +x; scaleX(side) points it at the correct post.
+        <g style={{ transform: `scaleX(${side})` }}>
+          <path className="gk-line" d="M0 8 L64 -12" />
+          <path className="gk-line" d="M0 8 L-52 30 M0 8 L-44 42" />
+          <path className="gk-line gk-arms" d="M52 -8 L100 -26 M52 -8 L98 -8" />
+          <circle className="gk-glove" cx={100} cy={-26} r="7" />
+          <circle className="gk-glove" cx={98} cy={-8} r="7" />
+          <circle className="gk-head" cx={64} cy={-14} r="11" />
+        </g>
+      )}
     </g>
   )
 }
 
 function Ball({ phase, shotZone }) {
   const flying = (phase === 'flight' || phase === 'result') && shotZone
-  let tx = SPOT.x
-  let ty = SPOT.y
+  let x = SPOT.x
+  let y = SPOT.y
   let scale = 1
   let spin = 0
   if (flying) {
-    const target = cell(shotZone.row, shotZone.col)
-    tx = target.cx
-    ty = target.cy
-    scale = 0.62
-    spin = shotZone.col === 0 ? -720 : 720
+    const t = cell(shotZone.row, shotZone.col)
+    x = t.cx
+    y = t.cy
+    scale = 0.66
+    spin = shotZone.col === 0 ? -540 : shotZone.col === 2 ? 540 : 300
   }
   return (
     <>
-      <ellipse
-        className="ball-shadow"
-        cx={tx}
-        cy={flying ? MOUTH.B + 6 : SPOT.y + 16}
-        rx={flying ? 12 : 20}
-        ry={flying ? 4 : 7}
-      />
-      <g
-        className={`ball-orb ${flying ? 'flying' : ''}`}
-        style={{ transform: `translate(${tx}px, ${ty}px) scale(${scale}) rotate(${spin}deg)` }}
-      >
-        <circle r="17" fill="url(#ballShade)" stroke="#c8ccd4" strokeWidth="0.6" />
-        <path d="M0 -9 L8.5 -3 5 7 -5 7 -8.5 -3 Z" fill="#1f2430" />
-        <path d="M0 -17 L4 -11 -4 -11 Z" fill="#1f2430" />
-        <path d="M17 -2 l-6 4 2 -8 Z" fill="#1f2430" />
-        <path d="M-17 -2 l6 4 -2 -8 Z" fill="#1f2430" />
-        <path d="M9 13 l-3 -6 6 1 Z" fill="#1f2430" />
-        <path d="M-9 13 l3 -6 -6 1 Z" fill="#1f2430" />
+      {flying && (
+        <line className="ball-trail" x1={SPOT.x} y1={SPOT.y} x2={x} y2={y} />
+      )}
+      <ellipse className="ball-shadow" cx={x} cy={flying ? MOUTH.B + 8 : SPOT.y + 14} rx={flying ? 10 : 17} ry={flying ? 3.5 : 6} />
+      <g className="ball" style={{ transform: `translate(${x}px, ${y}px) scale(${scale}) rotate(${spin}deg)` }}>
+        <circle r="15" className="ball-body" />
+        <path className="ball-mark" d="M-9 -4 L9 4 M-4 9 L4 -9" />
       </g>
     </>
   )
@@ -141,163 +108,126 @@ export default function GoalField({
   diveZone = null,
   scored = null,
 }) {
-  const crowd = useMemo(buildCrowd, [])
   const shotZoneObj = shotZone ? zones.find((z) => z.key === shotZone) : null
   const diveZoneObj = diveZone ? zones.find((z) => z.key === diveZone) : null
 
-  const stripes = []
-  for (let i = 0; i < 11; i += 1) {
-    const x0 = (i * VB_W) / 10
-    const x1 = ((i + 1) * VB_W) / 10
-    stripes.push(
-      <path
-        key={i}
-        d={`M${x0} ${VB_H} L${x1} ${VB_H} L${450 + (x1 - 450) * 0.42} ${MOUTH.B} L${450 + (x0 - 450) * 0.42} ${MOUTH.B} Z`}
-        fill={i % 2 ? '#2f8f43' : '#278A3C'}
-      />,
-    )
-  }
+  // mowing arcs on the turf, drawn as faint chalk
+  const arcs = useMemo(
+    () =>
+      [96, 150, 210].map((r, i) => (
+        <path
+          key={i}
+          className="turf-arc"
+          d={`M${SPOT.x - r} ${VB_H} A ${r} ${r * 0.5} 0 0 1 ${SPOT.x + r} ${VB_H}`}
+        />
+      )),
+    [],
+  )
 
-  const mesh = []
-  for (let d = -14; d <= 22; d += 1) {
-    const off = d * 20
-    mesh.push(
-      <line key={`a${d}`} x1={MOUTH.L + off} y1={MOUTH.T} x2={MOUTH.L + off - (MOUTH.B - MOUTH.T)} y2={MOUTH.B} />,
-      <line key={`b${d}`} x1={MOUTH.L + off} y1={MOUTH.T} x2={MOUTH.L + off + (MOUTH.B - MOUTH.T)} y2={MOUTH.B} />,
-    )
-  }
+  // goal net as sparse chalk hatching
+  const net = useMemo(() => {
+    const lines = []
+    for (let i = 1; i < 12; i += 1) {
+      const x = MOUTH.L + (i * (MOUTH.R - MOUTH.L)) / 12
+      lines.push(<line key={`v${i}`} x1={x} y1={MOUTH.T} x2={x} y2={MOUTH.B} />)
+    }
+    for (let j = 1; j < 5; j += 1) {
+      const y = MOUTH.T + (j * (MOUTH.B - MOUTH.T)) / 5
+      lines.push(<line key={`h${j}`} x1={MOUTH.L} y1={y} x2={MOUTH.R} y2={y} />)
+    }
+    return lines
+  }, [])
 
   return (
-    <div className={`goalfield phase-${phase}`}>
-      <p className="goalfield-prompt">{mode === 'shoot' ? 'Choose where to shoot' : 'Choose where to dive'}</p>
-      <svg viewBox={`0 0 ${VB_W} ${VB_H}`} className="goalfield-svg" role="group" aria-label="Penalty scene">
+    <div className={`board phase-${phase}`}>
+      <svg viewBox={`0 0 ${VB_W} ${VB_H}`} className="board-svg" role="group" aria-label="Penalty, drawn on the tactics board">
         <defs>
-          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#0a1330" />
-            <stop offset="100%" stopColor="#14224b" />
-          </linearGradient>
-          <linearGradient id="grass" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#1c6f33" />
-            <stop offset="100%" stopColor="#2f9647" />
-          </linearGradient>
-          <radialGradient id="ballShade" cx="38%" cy="32%" r="72%">
-            <stop offset="0%" stopColor="#ffffff" />
-            <stop offset="70%" stopColor="#eef0f3" />
-            <stop offset="100%" stopColor="#c3c8d1" />
-          </radialGradient>
-          <radialGradient id="flood" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="rgba(255,247,214,0.55)" />
-            <stop offset="100%" stopColor="rgba(255,247,214,0)" />
-          </radialGradient>
-          <radialGradient id="vignette" cx="50%" cy="42%" r="70%">
-            <stop offset="60%" stopColor="rgba(0,0,0,0)" />
-            <stop offset="100%" stopColor="rgba(0,0,0,0.45)" />
-          </radialGradient>
-          <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
-            <feDropShadow dx="0" dy="5" stdDeviation="5" floodColor="#000" floodOpacity="0.4" />
+          <filter id="rough" x="-20%" y="-20%" width="140%" height="140%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.014 0.02" numOctaves="2" seed="7" result="n" />
+            <feDisplacementMap in="SourceGraphic" in2="n" scale="4.5" xChannelSelector="R" yChannelSelector="G" />
           </filter>
-          <clipPath id="mouthClip">
-            <rect x={MOUTH.L} y={MOUTH.T} width={MOUTH.R - MOUTH.L} height={MOUTH.B - MOUTH.T} />
-          </clipPath>
+          <filter id="grain">
+            <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" result="t" />
+            <feColorMatrix in="t" type="saturate" values="0" />
+          </filter>
         </defs>
 
-        {/* sky + stands + crowd */}
-        <rect x="0" y="0" width={VB_W} height={MOUTH.B} fill="url(#sky)" />
-        <path d={`M0 ${MOUTH.B} L0 96 Q450 -8 ${VB_W} 96 L${VB_W} ${MOUTH.B} Z`} fill="#0e1a3c" />
-        <path d={`M0 ${MOUTH.B} L0 168 Q450 96 ${VB_W} 168 L${VB_W} ${MOUTH.B} Z`} fill="#122048" opacity="0.85" />
-        <g className="crowd">
-          {crowd.map((dot, i) => (
-            <circle key={i} cx={dot.x} cy={dot.y} r={dot.r} fill={dot.c} opacity={dot.o} />
-          ))}
+        <rect x="0" y="0" width={VB_W} height={VB_H} className="board-ground" />
+        <g className="turf">{arcs}</g>
+
+        {/* chalk drawing — roughened as a group so the lines look hand-made */}
+        <g filter="url(#rough)">
+          {/* penalty box + arc */}
+          <path
+            className="pitch-line"
+            d={`M120 ${VB_H} L120 ${MOUTH.B + 4} L780 ${MOUTH.B + 4} L780 ${VB_H}`}
+            fill="none"
+          />
+          <path className="pitch-line" d={`M${SPOT.x - 132} ${MOUTH.B + 4} A 132 78 0 0 1 ${SPOT.x + 132} ${MOUTH.B + 4}`} fill="none" />
+          <circle className="pitch-line" cx={SPOT.x} cy={SPOT.y} r="3.5" />
+
+          {/* net + goal frame */}
+          <g className="net">{net}</g>
+          <path
+            className="frame"
+            d={`M${MOUTH.L} ${MOUTH.B} L${MOUTH.L} ${MOUTH.T} L${MOUTH.R} ${MOUTH.T} L${MOUTH.R} ${MOUTH.B}`}
+            fill="none"
+          />
+
+          {/* target corners */}
+          {zones.map((zone) => {
+            const r = cell(zone.row, zone.col)
+            const isSel = zone.key === selectedZone
+            return (
+              <g key={`o-${zone.key}`} className={`corner ${isSel ? 'corner--sel' : ''}`}>
+                <rect x={r.x + 8} y={r.y + 8} width={r.w - 16} height={r.h - 16} rx="2" fill="none" />
+                {isSel && (
+                  <path
+                    className="corner-x"
+                    d={`M${r.cx - 13} ${r.cy - 13} L${r.cx + 13} ${r.cy + 13} M${r.cx + 13} ${r.cy - 13} L${r.cx - 13} ${r.cy + 13}`}
+                  />
+                )}
+              </g>
+            )
+          })}
         </g>
 
-        {/* floodlights */}
-        {[140, 760].map((x) => (
-          <g key={x} className="floodlight">
-            <rect x={x - 26} y="8" width="52" height="14" rx="3" fill="#c9ccd6" />
-            <rect x={x - 3} y="20" width="6" height="26" fill="#8b8f9c" />
-            <circle cx={x} cy="15" r="60" fill="url(#flood)" />
-          </g>
-        ))}
-
-        {/* pitch */}
-        <rect x="0" y={MOUTH.B} width={VB_W} height={VB_H - MOUTH.B} fill="url(#grass)" />
-        <g opacity="0.5">{stripes}</g>
-        <path
-          d={`M${SPOT.x - 210} ${VB_H} Q${SPOT.x} ${MOUTH.B + 34} ${SPOT.x + 210} ${VB_H}`}
-          fill="none"
-          stroke="rgba(255,255,255,0.5)"
-          strokeWidth="3"
-        />
-        <path
-          d={`M180 ${VB_H} L${VB_W - 180} ${VB_H} L${VB_W - 300} ${MOUTH.B + 8} L300 ${MOUTH.B + 8} Z`}
-          fill="none"
-          stroke="rgba(255,255,255,0.45)"
-          strokeWidth="3"
-        />
-        <ellipse cx={SPOT.x} cy={SPOT.y + 2} rx="4" ry="2.4" fill="#fff" />
-
-        {/* goal: back net plane, mesh, posts */}
-        <rect
-          x={MOUTH.L + 14}
-          y={MOUTH.T + 10}
-          width={MOUTH.R - MOUTH.L - 28}
-          height={MOUTH.B - MOUTH.T - 10}
-          fill="rgba(10,18,40,0.55)"
-        />
-        <path d={`M${MOUTH.L} ${MOUTH.T} L${MOUTH.L + 14} ${MOUTH.T + 10}`} stroke="#eef1f6" strokeWidth="3" />
-        <path d={`M${MOUTH.R} ${MOUTH.T} L${MOUTH.R - 14} ${MOUTH.T + 10}`} stroke="#eef1f6" strokeWidth="3" />
-        <g className="net" clipPath="url(#mouthClip)">{mesh}</g>
-        <g className="goal-frame" filter="url(#soft)">
-          <rect x={MOUTH.L - 7} y={MOUTH.T - 7} width="12" height={MOUTH.B - MOUTH.T + 7} rx="5" fill="#f4f6fa" />
-          <rect x={MOUTH.R - 5} y={MOUTH.T - 7} width="12" height={MOUTH.B - MOUTH.T + 7} rx="5" fill="#f4f6fa" />
-          <rect x={MOUTH.L - 7} y={MOUTH.T - 7} width={MOUTH.R - MOUTH.L + 14} height="12" rx="5" fill="#ffffff" />
-        </g>
-
-        {/* keeper + ball */}
+        {/* keeper + ball sit above the chalk, drawn cleaner */}
         <Keeper diveZone={diveZoneObj} />
         <Ball phase={phase} shotZone={shotZoneObj} />
 
-        {/* clickable zones */}
+        {/* hit areas + quiet labels (crisp, not roughened) */}
         {zones.map((zone) => {
           const r = cell(zone.row, zone.col)
-          const isSelected = zone.key === selectedZone
           return (
             <g
-              key={zone.key}
-              className={`zone ${isSelected ? 'zone-selected' : ''} ${interactive ? 'zone-live' : ''}`}
+              key={`h-${zone.key}`}
+              className={`hit ${interactive ? 'hit--live' : ''}`}
               onClick={() => interactive && onSelect?.(zone.key)}
             >
-              <rect x={r.x + 4} y={r.y + 4} width={r.w - 8} height={r.h - 8} rx="8" />
-              <g className="reticle" transform={`translate(${r.cx} ${r.cy})`}>
-                <circle r="17" fill="none" strokeWidth="2.5" />
-                <path d="M0 -24 V-11 M0 11 V24 M-24 0 H-11 M11 0 H24" strokeWidth="2.5" />
-              </g>
-              <text x={r.cx} y={r.y + 18} textAnchor="middle" className="zone-code">
+              <rect x={r.x} y={r.y} width={r.w} height={r.h} fill="transparent" />
+              <text x={r.x + 12} y={r.y + 20} className="corner-tag">
                 {zone.short}
               </text>
             </g>
           )
         })}
 
-        {/* impact FX */}
         {phase === 'result' && scored !== null && (
-          <g className="fx">
-            <rect
-              x={MOUTH.L}
-              y={MOUTH.T}
-              width={MOUTH.R - MOUTH.L}
-              height={MOUTH.B - MOUTH.T}
-              fill={scored ? 'rgba(57,217,138,0.22)' : 'rgba(245,165,36,0.22)'}
-            />
-            <text x={VB_W / 2} y={MOUTH.T - 22} textAnchor="middle" className={`stamp ${scored ? 'stamp-goal' : 'stamp-save'}`}>
-              {scored ? 'GOAL!' : 'SAVED!'}
+          <g className="verdict">
+            <text x={VB_W / 2} y={MOUTH.T - 26} textAnchor="middle" className={scored ? 'verdict-goal' : 'verdict-save'}>
+              {scored ? 'GOAL' : 'SAVED'}
             </text>
+            <path
+              className={scored ? 'verdict-rule verdict-rule--goal' : 'verdict-rule verdict-rule--save'}
+              d={`M${VB_W / 2 - 66} ${MOUTH.T - 12} q 66 -10 132 0`}
+            />
           </g>
         )}
 
-        <rect x="0" y="0" width={VB_W} height={VB_H} fill="url(#vignette)" pointerEvents="none" />
+        <rect x="0" y="0" width={VB_W} height={VB_H} filter="url(#grain)" className="board-grain" />
       </svg>
+      <p className="board-caption">{mode === 'shoot' ? 'Pick your corner' : 'Pick your dive'}</p>
     </div>
   )
 }

@@ -172,9 +172,13 @@ The mathematics has **no dependency** on FastAPI, React, or any UI code.
 | GET | `/api/equilibrium` | full analysis of the default matrix |
 | POST | `/api/analyze` | Experiment mode: analyse a user-edited matrix |
 | POST | `/api/simulate` | Monte Carlo run (theory vs empirical) |
-| POST | `/api/sessions` | start a match (role, seed, optional custom matrix) |
-| POST | `/api/sessions/{id}/turn` | play one penalty |
-| POST | `/api/sessions/{id}/reset` | restart the match |
+| POST | `/api/penalty` | one shot, one save — the AI samples its side from the equilibrium |
+| POST | `/api/sessions` `…/turn` `…/reset` | 5-round shootout with sudden death (engine kept for completeness) |
+
+The web UI's **The duel** tab is a single-penalty duel (`/api/penalty`): pick a
+corner, the keeper commits its side from the equilibrium mix at the same
+instant, and you see the verdict. The full shootout logic still lives in
+`game/penalty_engine.py` and the session endpoints.
 
 ## 10. Installation
 

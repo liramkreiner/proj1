@@ -94,7 +94,28 @@ class SimulateResponse(BaseModel):
 
 
 # --------------------------------------------------------------------------- #
-# Gameplay sessions
+# Single penalty (one shot, one save)
+# --------------------------------------------------------------------------- #
+class PenaltyRequest(BaseModel):
+    role: Role = "Shooter"
+    zone: str = Field(..., description="The zone you chose: shot target if kicking, dive if keeping.")
+    values: list[list[float]] | None = Field(
+        default=None, description="Optional custom payoff matrix; the AI re-solves for it."
+    )
+    seed: int | None = None
+
+
+class PenaltyResult(BaseModel):
+    role: Role
+    shooter_zone: str
+    goalkeeper_zone: str
+    scored: bool
+    scoring_probability: float
+    ai_probabilities: list[StrategyEntry]
+
+
+# --------------------------------------------------------------------------- #
+# Gameplay sessions (5-round shootout — kept for completeness)
 # --------------------------------------------------------------------------- #
 class StartSessionRequest(BaseModel):
     role: Role = "Shooter"

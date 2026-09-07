@@ -199,6 +199,46 @@ def analyze_matrix(payload: schemas.MatrixPayload) -> schemas.EquilibriumRespons
     return _equilibrium_response(_payoff_matrix_from_values(payload.values))
 
 
+@app.post("/api/penalty", response_model=schemas.PenaltyResult)
+def take_penalty(payload: schemas.PenaltyRequest) -> schemas.PenaltyResult:
+    """One shot, one save. The AI samples its zone from the equilibrium mix."""
+
+    payoff_matrix = (
+        _payoff_matrix_from_values(payload.values)
+        if payload.values is not None
+        else build_default_penalty_payoff_matrix()
+    )
+    equilibrium = solve_nash_equilibrium(
+        payoff_matrix.values,
+        row_labels=payoff_matrix.row_labels,
+        column_labels=payoff_matrix.column_labels,
+    )
+
+    user_index = ZONE_LABELS.index(_zone_from_text(payload.zone).label)
+    rng = np.random.default_rng(payload.seed)
+
+    if payload.role == "Shooter":
+        ai_strategy = equilibrium.goalkeeper_strategy
+        shooter_index = user_index
+        goalkeeper_index = int(rng.choice(len(ZONE_LABELS), p=ai_strategy.probabilities))
+    else:
+        ai_strategy = equilibrium.shooter_strategy
+        goalkeeper_index = user_index
+        shooter_index = int(rng.choice(len(ZONE_LABELS), p=ai_strategy.probabilities))
+
+    scoring_probability = float(payoff_matrix.values[shooter_index, goalkeeper_index])
+    scored = bool(rng.random() < scoring_probability)
+
+    return schemas.PenaltyResult(
+        role=payload.role,
+        shooter_zone=ZONE_LABELS[shooter_index],
+        goalkeeper_zone=ZONE_LABELS[goalkeeper_index],
+        scored=scored,
+        scoring_probability=scoring_probability,
+        ai_probabilities=_strategy_entries(ai_strategy.action_labels, ai_strategy.probabilities),
+    )
+
+
 @app.post("/api/simulate", response_model=schemas.SimulateResponse)
 def simulate(payload: schemas.SimulateRequest) -> schemas.SimulateResponse:
     """Monte Carlo: both players sample their equilibrium mixed strategies."""

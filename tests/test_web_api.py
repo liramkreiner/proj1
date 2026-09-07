@@ -65,6 +65,31 @@ def test_simulate_converges_to_theory() -> None:
         assert abs(entry["theoretical"] - entry["empirical"]) < 5e-2
 
 
+def test_single_penalty_as_shooter() -> None:
+    response = client.post("/api/penalty", json={"role": "Shooter", "zone": "Top Left", "seed": 3})
+    assert response.status_code == 200
+    body = response.json()
+
+    assert body["shooter_zone"] == "Top Left"
+    assert body["goalkeeper_zone"] in {zone.label for zone in GoalZone}
+    assert isinstance(body["scored"], bool)
+    assert 0.0 <= body["scoring_probability"] <= 1.0
+    assert len(body["ai_probabilities"]) == 6
+    assert abs(sum(entry["probability"] for entry in body["ai_probabilities"]) - 1.0) < 1e-6
+
+
+def test_single_penalty_as_keeper_is_deterministic_under_seed() -> None:
+    a = client.post("/api/penalty", json={"role": "Goalkeeper", "zone": "Bottom Right", "seed": 11}).json()
+    b = client.post("/api/penalty", json={"role": "Goalkeeper", "zone": "Bottom Right", "seed": 11}).json()
+
+    assert a["goalkeeper_zone"] == "Bottom Right"
+    assert a == b
+
+
+def test_single_penalty_rejects_unknown_zone() -> None:
+    assert client.post("/api/penalty", json={"role": "Shooter", "zone": "Nowhere"}).status_code == 422
+
+
 def test_session_lifecycle_and_turn_zones() -> None:
     start = client.post("/api/sessions", json={"role": "Shooter", "seed": 42}).json()
     sid = start["session_id"]

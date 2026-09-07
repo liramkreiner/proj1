@@ -36,6 +36,8 @@ export const api = {
   analyze: (values) => request('/api/analyze', { method: 'POST', body: JSON.stringify({ values }) }),
   simulate: ({ values = null, games, seed = null }) =>
     request('/api/simulate', { method: 'POST', body: JSON.stringify({ values, games, seed }) }),
+  penalty: ({ role, zone, values = null, seed = null }) =>
+    request('/api/penalty', { method: 'POST', body: JSON.stringify({ role, zone, values, seed }) }),
   startSession: ({ role, seed = null, values = null, total_rounds = 5 }) =>
     request('/api/sessions', {
       method: 'POST',
