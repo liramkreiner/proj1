@@ -1,0 +1,10 @@
+# Convenience wrapper:  docker compose up --build
+services:
+  app:
+    build: .
+    image: tactical-penalty-shootout:latest
+    ports:
+      - "8000:8000"
+    environment:
+      PORT: "8000"
+    restart: unless-stopped

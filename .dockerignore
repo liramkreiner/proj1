@@ -1,0 +1,16 @@
+**/__pycache__/
+**/*.pyc
+.pytest_cache/
+.ruff_cache/
+.git/
+.gitignore
+.venv/
+venv/
+tests/
+web/frontend/node_modules/
+web/frontend/dist/
+*.md
+!README.md
+.vscode/
+.idea/
+.DS_Store
