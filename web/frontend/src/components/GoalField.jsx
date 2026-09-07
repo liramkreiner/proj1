@@ -36,8 +36,11 @@ export default function GoalField({
   const keeperPos = keeperZone ? zoneRect(keeperZone.row, keeperZone.col) : { cx: VB_W / 2, cy: GOAL.y1 - CELL_H / 2 }
 
   const ballZone = ballKey ? zones.find((z) => z.key === ballKey) : null
-  const ballPos =
-    phase !== 'idle' && ballZone ? zoneRect(ballZone.row, ballZone.col) : spot
+  let ballPos = spot
+  if (phase !== 'idle' && ballZone) {
+    const r = zoneRect(ballZone.row, ballZone.col)
+    ballPos = { x: r.cx, y: r.cy }
+  }
 
   return (
     <div className="goalfield">
@@ -127,8 +130,8 @@ export default function GoalField({
         {/* ball */}
         <circle
           className={`ball ${phase}`}
-          cx={ballPos.x ?? ballPos.cx}
-          cy={ballPos.y ?? ballPos.cy}
+          cx={ballPos.x}
+          cy={ballPos.y}
           r={phase === 'idle' ? 7 : 5}
           fill="#fff"
           stroke="#111"
