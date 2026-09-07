@@ -133,7 +133,10 @@ export default function PlayTab({ zones, activeMatrix = null }) {
   const revealed = (phase === 'flight' || phase === 'result') && last
   const shotZone = revealed ? keyOf(last.shooter_zone) : null
   const diveZone = revealed ? keyOf(last.goalkeeper_zone) : null
-  const outcome = phase === 'result' && last ? (last.scored ? 'goal' : 'save') : null
+  // Resolve the outcome the moment the ball leaves the spot so it flies to ONE
+  // target (net on a goal, gloves on a save) instead of the corner and then the
+  // gloves. The GOAL/SAVED caption is still shown only at 'result' inside GoalField.
+  const outcome = revealed ? (last.scored ? 'goal' : 'save') : null
 
   const youKicks = kicks.filter((k) => k.taker === 'you')
   const aiKicks = kicks.filter((k) => k.taker === 'ai')

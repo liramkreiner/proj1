@@ -236,16 +236,22 @@ pre {
   filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.45));
 }
 
-/* keeper */
-.gk {
-  transition: transform 0.6s cubic-bezier(0.3, 0.72, 0.28, 1);
-}
+/* keeper — animate only while the ball is live; snap back on reset so nothing
+   appears to travel in two directions */
+.gk,
 .gk > g {
-  transition: transform 0.5s cubic-bezier(0.3, 0.72, 0.28, 1);
+  transition: none;
+}
+.pitch.phase-windup .gk,
+.pitch.phase-flight .gk,
+.pitch.phase-result .gk,
+.pitch.phase-windup .gk > g,
+.pitch.phase-flight .gk > g,
+.pitch.phase-result .gk > g {
+  transition: transform 0.55s cubic-bezier(0.3, 0.72, 0.28, 1);
 }
 .gk-shadow {
   fill: rgba(0, 0, 0, 0.32);
-  transition: rx 0.5s;
 }
 .gk-skin {
   fill: #e7b48c;
@@ -279,8 +285,13 @@ pre {
   stroke-width: 1.5;
 }
 
-/* ball */
+/* ball — one smooth flight, then an instant reset (no fly-back) */
 .ball {
+  transition: none;
+}
+.pitch.phase-windup .ball,
+.pitch.phase-flight .ball,
+.pitch.phase-result .ball {
   transition: transform 0.66s cubic-bezier(0.32, 0.68, 0.3, 1);
 }
 .pitch.phase-idle .ball {
@@ -297,6 +308,11 @@ pre {
 }
 .ball-shadow {
   fill: rgba(0, 0, 0, 0.3);
+  transition: none;
+}
+.pitch.phase-windup .ball-shadow,
+.pitch.phase-flight .ball-shadow,
+.pitch.phase-result .ball-shadow {
   transition: cx 0.66s cubic-bezier(0.32, 0.68, 0.3, 1), rx 0.66s, ry 0.66s;
 }
 .ball-trail {
