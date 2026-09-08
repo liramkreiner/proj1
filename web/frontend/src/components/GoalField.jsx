@@ -294,7 +294,9 @@ export default function GoalField({
           </text>
         )}
       </svg>
-      <p className="pitch-caption">{mode === 'shoot' ? 'Pick your corner' : 'Pick your side'}</p>
+      <p className="pitch-caption">
+        {mode === 'shoot' ? 'You are the striker. Pick your corner.' : 'You are the keeper. Pick your side.'}
+      </p>
     </div>
   )
 }

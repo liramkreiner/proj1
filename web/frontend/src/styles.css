@@ -705,12 +705,34 @@ button {
   overflow: hidden;
 }
 .sb-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   font-family: var(--display);
   font-size: 1.35rem;
   letter-spacing: 0.02em;
   color: var(--knock);
   background: var(--ink);
-  padding: 11px 18px 13px;
+  padding: 11px 16px 12px 18px;
+}
+.sb-role {
+  font-family: var(--text);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 3px 9px 4px;
+  border: 1.5px solid var(--knock);
+  border-radius: 2px;
+  white-space: nowrap;
+}
+.sb-role--shooter {
+  background: var(--pitch);
+  color: var(--knock);
+}
+.sb-role--keeper {
+  background: var(--flag);
+  color: var(--knock);
 }
 .sb-row {
   display: grid;

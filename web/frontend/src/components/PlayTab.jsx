@@ -167,7 +167,14 @@ export default function PlayTab({ zones, activeMatrix = null }) {
       </section>
 
       <aside className="scoreboard">
-        <div className="sb-head">Penalty shootout</div>
+        <div className="sb-head">
+          <span>Penalty shootout</span>
+          {!finished && (
+            <span className={`sb-role sb-role--${isYourKick ? 'shooter' : 'keeper'}`}>
+              You: {isYourKick ? 'Striker' : 'Keeper'}
+            </span>
+          )}
+        </div>
 
         <div className="sb-row">
           <span className="sb-name">You</span>
