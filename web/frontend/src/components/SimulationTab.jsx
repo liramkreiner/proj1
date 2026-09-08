@@ -121,8 +121,8 @@ export default function SimulationTab({ activeMatrix, config }) {
             </section>
           </div>
           <p className="muted center">
-            Increase the penalty count and the empirical bars converge onto the theoretical bars —
-            the AI's behaviour is the equilibrium distribution, observed in aggregate.
+            Increase the penalty count and the empirical bars converge onto the theoretical bars. The
+            AI's behaviour is the equilibrium distribution, observed in aggregate.
           </p>
         </>
       )}

@@ -265,7 +265,7 @@ export default function PlayTab({ zones, activeMatrix = null, equilibrium = null
             </div>
             <p className="sb-mix-cap">
               {isYourKick ? "The keeper's side is drawn" : "The striker's corner is drawn"} from the equilibrium
-              mix — you can't read the next one from the last.
+              mix. You can't read the next one from the last.
             </p>
           </>
         )}
@@ -287,7 +287,7 @@ export default function PlayTab({ zones, activeMatrix = null, equilibrium = null
               </div>
               <p className="sb-edge-note">
                 {read.leak > 0.03
-                  ? `That is ${pct(read.leak, 0)} below the equilibrium's ${pct(read.v, 0)}. You lean on ${read.worst.label} — ${pct(read.worst.you, 0)} of your kicks, against an optimal ${pct(read.worst.opt, 0)}.`
+                  ? `That is ${pct(read.leak, 0)} below the equilibrium's ${pct(read.v, 0)}. You lean on ${read.worst.label}: ${pct(read.worst.you, 0)} of your kicks, against an optimal ${pct(read.worst.opt, 0)}.`
                   : `The equilibrium scores ${pct(read.v, 0)}; you are mixing about as well as the maths allows.`}
               </p>
             </>

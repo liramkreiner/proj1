@@ -53,7 +53,7 @@ export default function ExperimentTab({ baseEquilibrium, defaultValues, onApply 
       <section className="card">
         <h3>Edit the payoff matrix</h3>
         <p className="muted">
-          Change any scoring probabilities (0–1), then recalculate. The solver is generic: it
+          Change any scoring probabilities (0 to 1), then recalculate. The solver is generic: it
           re-runs the same linear program, re-detects saddle points, and the Play-tab AI immediately
           adopts the new equilibrium strategy.
         </p>
@@ -71,7 +71,7 @@ export default function ExperimentTab({ baseEquilibrium, defaultValues, onApply 
             Reset to default
           </button>
           <span className={applied ? 'pill pill-ok' : 'pill pill-warn'}>
-            {applied ? 'AI is using this matrix' : 'Unsaved edits — recalculate to apply'}
+            {applied ? 'AI is using this matrix' : 'Unsaved edits. Recalculate to apply'}
           </span>
         </div>
         {error && <p className="error-banner">{error}</p>}

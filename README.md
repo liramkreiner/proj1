@@ -10,7 +10,7 @@ empirical play converging to the theory, and edit the payoff matrix to prove the
 engine is fully generic.
 
 The game-theory engine is the core of the project. The UI never does any
-mathematics — it only calls the engine and renders the result.
+mathematics; it only calls the engine and renders the result.
 
 ---
 
@@ -22,7 +22,7 @@ mathematics — it only calls the engine and renders the result.
 | Domain | `game/` | Goal zones, payoff-matrix model, penalty resolution, Monte Carlo, match flow |
 | Agents | `agents/` | `OptimalAgent` (samples the equilibrium), `HumanAgent` |
 | Transport | `web/backend/` | FastAPI: turns JSON into engine calls, serves the built UI |
-| Interface | `web/frontend/` | React SPA: Play, Game Theory, Simulation, Experiment, Explanation |
+| Interface | `web/frontend/` | React SPA: Play, Game theory, Simulation, Experiment, The maths |
 
 ## 2. Game rules
 
@@ -95,9 +95,23 @@ penalties, and neither side can do better against a competent opponent.
 
 Because the game is zero-sum, the minimax pair $(p^\*, q^\*)$ is a **Nash
 equilibrium**: given $q^\*$ every zone in the shooter's support returns exactly
-$v$, so unilateral deviation cannot help — and symmetrically for the keeper. The
+$v$, so unilateral deviation cannot help, and the same holds for the keeper. The
 Play-tab AI simply samples from $q^\*$ (or $p^\*$), which is why its next move
 cannot be predicted from its past moves.
+
+### Seeing why it matters: the exploitability meter
+
+The **Play** tab tracks *your* realised corner frequencies $\hat p$ across
+shootouts and reports
+
+$$\text{exploited} = \min_j (\hat p^\top A)_j,$$
+
+the scoring rate a keeper who had spotted your pattern could hold you to. Since
+$\max_p \min_j (p^\top A)_j = v$, this number is always $\le v$, with equality
+only when $\hat p$ is the equilibrium mix. Favour one corner and it drops fast:
+shoot Bottom-Right every time and it falls from $v \approx 0.75$ to
+$A[\text{BR},\text{BR}] = 0.30$. A running "You: Striker / You: Keeper" badge
+shows which side you are playing on each kick.
 
 ## 8. Linear-programming formulation
 
@@ -123,7 +137,7 @@ $$
 $$
 
 LP **strong duality** forces the two optimal objective values to coincide, and
-that shared number is $v$ — this is exactly the minimax theorem. The
+that shared number is $v$, which is exactly the minimax theorem. The
 implementation (`game_theory/linear_programming.py`) builds both programs,
 solves them with `scipy.optimize.linprog` (HiGHS), and **cross-checks** the two
 values; `game_theory/nash_equilibrium.py` then verifies
@@ -141,7 +155,7 @@ proj1/
 ├── demo.py                 Phase 1 console demonstration (3 worked examples)
 ├── game/
 │   ├── models.py           GoalZone enum, dataclasses (PayoffMatrix, EquilibriumResult, ...)
-│   ├── config.py           geometry, tolerances, MatchRules — no magic numbers elsewhere
+│   ├── config.py           geometry, tolerances, MatchRules (no magic numbers elsewhere)
 │   ├── payoff_matrix.py    PenaltyProbabilityModel -> PayoffMatrix
 │   ├── penalty_engine.py   ProbabilitySampler, PenaltyShootoutEngine, match + sudden death
 │   ├── simulation.py       run_penalty_monte_carlo (vectorised)
@@ -172,15 +186,17 @@ The mathematics has **no dependency** on FastAPI, React, or any UI code.
 | GET | `/api/equilibrium` | full analysis of the default matrix |
 | POST | `/api/analyze` | Experiment mode: analyse a user-edited matrix |
 | POST | `/api/simulate` | Monte Carlo run (theory vs empirical) |
-| POST | `/api/penalty` | one shot, one save — the AI samples its side from the equilibrium |
+| POST | `/api/penalty` | one shot, one save; the AI samples its side from the equilibrium |
 | POST | `/api/sessions` `…/turn` `…/reset` | server-side match state (engine kept for completeness) |
 
-The **Shootout** tab plays a real penalty shootout: you take five kicks and
-face five, alternating, with early stop and sudden death, all decided over
-repeated `/api/penalty` calls. On your kick you choose a corner; on your save
-you choose a side; the opponent's choice is drawn from the equilibrium mix at
-the same instant. Solver calls in the web layer are serialised (HiGHS is not
-re-entrant) and the default equilibrium is memoised.
+The **Play** tab is a real penalty shootout: you take five kicks and face five,
+alternating, with early stop and sudden death, all decided over repeated
+`/api/penalty` calls. On your kick you choose a corner; on your save you choose
+a side; the opponent's choice is drawn from the equilibrium mix at the same
+instant. A striker/keeper badge shows your current role, and a **How readable
+you are** panel scores your shooting against the equilibrium (see §7). Solver
+calls in the web layer are serialised (HiGHS is not re-entrant) and the default
+equilibrium is memoised.
 
 ## 10. Installation
 
@@ -232,7 +248,7 @@ pytest
 Covers: payoff-matrix validation, maximin/minimax and saddle-point detection,
 the LP layer, mixed-strategy solutions for **matching pennies**
 ($p=q=(\tfrac12,\tfrac12)$, $v=0$), a **non-uniform** $2\times2$ game
-($p=(0.2,0.8)$, $q=(0.6,0.4)$, $v=2.4$), rock–paper–scissors, a game with a pure
+($p=(0.2,0.8)$, $q=(0.6,0.4)$, $v=2.4$), rock-paper-scissors, a game with a pure
 saddle point, Monte Carlo convergence, the agents (the AI samples the whole
 support, not the argmax), the match engine (goal / save / score tracking /
 sudden death / completion) and every API endpoint.
@@ -274,7 +290,7 @@ empirical frequencies with their $L^1$ error.
 
 Monte Carlo, 200 000 penalties at equilibrium: observed scoring rate within
 ~$5\times10^{-3}$ of $v$, and empirical zone frequencies within ~$10^{-2}$ of
-$p$ and $q$ — the AI *is* the equilibrium distribution, seen in aggregate.
+$p$ and $q$. The AI *is* the equilibrium distribution, seen in aggregate.
 
 ---
 
@@ -283,5 +299,6 @@ $p$ and $q$ — the AI *is* the equilibrium distribution, seen in aggregate.
 The original brief specified a PyQt6 desktop app with Matplotlib charts. This
 build is **web-only** by request: PyQt6/Streamlit are removed, and the charts
 are rendered client-side (SVG) so the whole thing ships as one Docker image with
-no display server. The mathematical core, the architecture boundaries, and every
-Phase-1–7 requirement are unchanged.
+no display server. The UI is styled as a printed matchday programme; the pitch
+scene is a hand-drawn SVG illustration. The mathematical core, the architecture
+boundaries, and every Phase 1 to 7 requirement are unchanged.

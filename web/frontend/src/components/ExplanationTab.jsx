@@ -20,7 +20,7 @@ export default function ExplanationTab({ equilibrium }) {
       <section className="card">
         <h3>Imperfect information &amp; mixed strategies</h3>
         <p>
-          Both players commit simultaneously — neither sees the other's choice — so no deterministic
+          Both players commit simultaneously, and neither sees the other's choice, so no deterministic
           rule is safe: whatever fixed zone you pick, the opponent could exploit it. A{' '}
           <strong>mixed strategy</strong> is a probability distribution over zones. The shooter plays{' '}
           <code>p = (p₁,…,p₆)</code>, the goalkeeper <code>q = (q₁,…,q₆)</code>, with{' '}
@@ -54,7 +54,7 @@ export default function ExplanationTab({ equilibrium }) {
         <pre>maxₚ min_q pᵀ A q  =  min_q maxₚ pᵀ A q  =  v</pre>
         <p>
           The common value <code>v</code> is the <strong>value of the game</strong>. Here{' '}
-          <code>v = {v}</code> — the shooter can guarantee an expected scoring probability of at
+          <code>v = {v}</code>. The shooter can guarantee an expected scoring probability of at
           least <code>{equilibrium ? pct(equilibrium.game_value) : 'v'}</code>, and the goalkeeper
           can hold it to no more than that.
         </p>
@@ -82,7 +82,7 @@ subject to  (A q)ᵢ ≤ w   for every row i
         <p>
           The optimal pair <code>(p*, q*)</code> is a <strong>Nash equilibrium</strong>: given{' '}
           <code>q*</code>, every zone in the shooter's support yields exactly <code>v</code>, so the
-          shooter cannot do better by deviating — and symmetrically for the goalkeeper. Because the
+          shooter cannot do better by deviating, and the same holds for the goalkeeper. Because the
           game is zero-sum, this equilibrium is also unique in value and interchangeable. The Play
           tab's AI simply samples from <code>q*</code> (or <code>p*</code>), which is why it cannot
           be read or exploited.

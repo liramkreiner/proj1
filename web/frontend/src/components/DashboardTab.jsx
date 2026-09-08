@@ -59,7 +59,7 @@ export default function DashboardTab({ equilibrium }) {
           <p className="muted">
             {pure.has_pure_equilibrium
               ? 'maximin = minimax ⇒ a pure-strategy equilibrium exists at the saddle point.'
-              : `maximin (${fixed(pure.maximin, 2)}) ≠ minimax (${fixed(pure.minimax, 2)}) ⇒ no pure equilibrium — the players must randomise.`}
+              : `maximin (${fixed(pure.maximin, 2)}) ≠ minimax (${fixed(pure.minimax, 2)}) ⇒ no pure equilibrium, so the players must randomise.`}
           </p>
         </section>
 
