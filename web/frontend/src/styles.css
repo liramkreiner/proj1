@@ -837,6 +837,43 @@ button {
   padding-top: 12px;
   border-top: 1.5px solid var(--ink);
 }
+.sb-edge {
+  padding: 13px 18px 15px;
+  border-top: 1.5px solid var(--ink);
+}
+.sb-edge-head {
+  font-family: var(--display);
+  font-size: 1.1rem;
+  letter-spacing: 0.02em;
+  margin-bottom: 6px;
+}
+.sb-edge-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+}
+.sb-edge-stat strong {
+  font-family: var(--display);
+  font-size: 2.1rem;
+  line-height: 0.85;
+  font-variant-numeric: tabular-nums;
+}
+.sb-edge-stat strong.leak {
+  color: var(--flag);
+}
+.sb-edge-stat strong.tight {
+  color: var(--pitch);
+}
+.sb-edge-stat span {
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  max-width: 15ch;
+}
+.sb-edge-note {
+  margin: 7px 0 0;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
 .sb-reset {
   display: block;
   width: 100%;

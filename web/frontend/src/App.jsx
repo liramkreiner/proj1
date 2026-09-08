@@ -82,7 +82,9 @@ export default function App() {
       </nav>
 
       <main>
-        {tab === 'play' && <PlayTab zones={config.zones} activeMatrix={activeMatrix} />}
+        {tab === 'play' && (
+          <PlayTab zones={config.zones} activeMatrix={activeMatrix} equilibrium={equilibrium} />
+        )}
         {tab === 'dashboard' && <DashboardTab equilibrium={equilibrium} />}
         {tab === 'simulation' && <SimulationTab activeMatrix={activeMatrix} config={config} />}
         {tab === 'experiment' && (

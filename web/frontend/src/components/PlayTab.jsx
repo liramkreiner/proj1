@@ -41,6 +41,40 @@ function status(kicks) {
   return { over: false, you, ai, phase: 'suddenDeath' }
 }
 
+// How much a keeper who had spotted your realised shooting pattern could take
+// off your scoring rate. exploited = min_j (p̂ᵀ A)_j ≤ v for any p̂, with
+// equality only when p̂ is the equilibrium mix.
+function readShooting(career, equilibrium) {
+  const n = career.total
+  if (!equilibrium || n < 3) return { ready: false, n }
+  const rows = equilibrium.payoff_matrix.row_labels
+  const A = equilibrium.payoff_matrix.values
+  const v = equilibrium.game_value
+  const pHat = rows.map((label) => (career.shots[label] || 0) / n)
+
+  let exploited = Infinity
+  for (let j = 0; j < A[0].length; j += 1) {
+    let s = 0
+    for (let i = 0; i < rows.length; i += 1) s += pHat[i] * A[i][j]
+    if (s < exploited) exploited = s
+  }
+
+  const pStar = equilibrium.shooter_strategy
+  let worst = 0
+  for (let i = 1; i < rows.length; i += 1) {
+    if (pHat[i] - pStar[i].probability > pHat[worst] - pStar[worst].probability) worst = i
+  }
+
+  return {
+    ready: true,
+    n,
+    v,
+    exploited,
+    leak: v - exploited,
+    worst: { label: rows[worst], you: pHat[worst], opt: pStar[worst].probability },
+  }
+}
+
 function Pips({ list, target }) {
   const slots = Math.max(target, list.length)
   return (
@@ -54,13 +88,15 @@ function Pips({ list, target }) {
   )
 }
 
-export default function PlayTab({ zones, activeMatrix = null }) {
+export default function PlayTab({ zones, activeMatrix = null, equilibrium = null }) {
   const [kicks, setKicks] = useState([])
   const [phase, setPhase] = useState('idle')
   const [selected, setSelected] = useState(null)
   const [last, setLast] = useState(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
+  // your shooting pattern, kept across shootouts (reset only when the matrix changes)
+  const [career, setCareer] = useState({ total: 0, shots: {} })
   const timers = useRef([])
 
   const clearTimers = useCallback(() => {
@@ -83,6 +119,11 @@ export default function PlayTab({ zones, activeMatrix = null }) {
     newShootout()
     return clearTimers
   }, [activeMatrix, newShootout, clearTimers])
+
+  // a different payoff matrix is a different game — start the readability tally over
+  useEffect(() => {
+    setCareer({ total: 0, shots: {} })
+  }, [activeMatrix])
 
   const st = status(kicks)
   const finished = st.over
@@ -113,6 +154,12 @@ export default function PlayTab({ zones, activeMatrix = null }) {
         setPhase('flight')
         later(() => {
           setKicks((prev) => [...prev, kick])
+          if (kick.taker === 'you') {
+            setCareer((c) => ({
+              total: c.total + 1,
+              shots: { ...c.shots, [kick.shot]: (c.shots[kick.shot] || 0) + 1 },
+            }))
+          }
           setPhase('result')
           setBusy(false)
           later(() => {
@@ -140,6 +187,7 @@ export default function PlayTab({ zones, activeMatrix = null }) {
 
   const youKicks = kicks.filter((k) => k.taker === 'you')
   const aiKicks = kicks.filter((k) => k.taker === 'ai')
+  const read = readShooting(career, equilibrium)
 
   const statusLine = finished
     ? st.winner === 'you'
@@ -228,6 +276,27 @@ export default function PlayTab({ zones, activeMatrix = null }) {
             pick a side. Whoever the ball beats, it was drawn from the optimal mix.
           </p>
         )}
+
+        <div className="sb-edge">
+          <div className="sb-edge-head">How readable you are</div>
+          {read.ready ? (
+            <>
+              <div className="sb-edge-stat">
+                <strong className={read.leak > 0.03 ? 'leak' : 'tight'}>{pct(read.exploited, 0)}</strong>
+                <span>a keeper who had read your {read.n} kicks</span>
+              </div>
+              <p className="sb-edge-note">
+                {read.leak > 0.03
+                  ? `That is ${pct(read.leak, 0)} below the equilibrium's ${pct(read.v, 0)}. You lean on ${read.worst.label} — ${pct(read.worst.you, 0)} of your kicks, against an optimal ${pct(read.worst.opt, 0)}.`
+                  : `The equilibrium scores ${pct(read.v, 0)}; you are mixing about as well as the maths allows.`}
+              </p>
+            </>
+          ) : (
+            <p className="sb-edge-note">
+              Take a few kicks. This shows what a keeper who spotted your pattern could hold you to.
+            </p>
+          )}
+        </div>
 
         <button type="button" className="sb-reset" onClick={newShootout} disabled={busy}>
           {finished ? 'New shootout' : 'Restart'}
