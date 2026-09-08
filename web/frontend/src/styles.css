@@ -6,17 +6,17 @@
 /* ===================================================================== */
 
 :root {
-  --void: #071410;
-  --turf-dark: #0c1f16;
-  --turf: #12291d;
-  --turf-2: #17331f;
-  --edge: #274b38;
-  --edge-soft: #1c3a2a;
-  --chalk: #f2f5ef;
-  --chalk-dim: #86a390;
-  --strike: #ffcf33;
+  --void: #0a1226;
+  --turf-dark: #111b34;
+  --turf: #16223f;
+  --turf-2: #1b2a4d;
+  --edge: #2c3d66;
+  --edge-soft: #223050;
+  --chalk: #eef2fb;
+  --chalk-dim: #8a9bc4;
+  --strike: #f6b53c;
   --save: #ff6a4d;
-  --reference: #6fb2c9;
+  --reference: #7fb2e0;
 
   /* legacy names the preserved pitch block reads — do not repurpose */
   --muted: var(--chalk-dim);
@@ -44,9 +44,9 @@ body {
   color: var(--chalk);
   background-color: var(--void);
   background-image:
-    radial-gradient(1200px 640px at 82% -14%, rgba(255, 207, 51, 0.07), transparent 62%),
-    radial-gradient(900px 520px at -8% 8%, rgba(111, 178, 201, 0.05), transparent 55%),
-    linear-gradient(180deg, #0a1c13 0%, var(--void) 44%);
+    radial-gradient(1200px 640px at 82% -14%, rgba(246, 181, 60, 0.08), transparent 62%),
+    radial-gradient(900px 520px at -8% 8%, rgba(127, 178, 224, 0.06), transparent 55%),
+    linear-gradient(180deg, #0c1730 0%, var(--void) 46%);
   -webkit-font-smoothing: antialiased;
 }
 body::after {
@@ -89,7 +89,7 @@ a {
 code {
   font-family: var(--mono);
   font-size: 0.86em;
-  background: rgba(255, 207, 51, 0.12);
+  background: rgba(246, 181, 60, 0.13);
   padding: 0.08em 0.4em;
   border-radius: 3px;
 }
@@ -196,7 +196,7 @@ pre {
   left: 4px;
   font-family: var(--mono);
   font-size: 0.58rem;
-  color: rgba(242, 245, 239, 0.55);
+  color: rgba(238, 242, 251, 0.55);
 }
 .mg-pct {
   position: absolute;
@@ -766,7 +766,7 @@ button {
   position: absolute;
   inset: 2.5px;
   border-radius: 50%;
-  background: #46654f;
+  background: #45577e;
 }
 .sb-score {
   font-family: var(--display);
@@ -826,7 +826,7 @@ button {
 }
 .sb-mix i {
   flex: 1;
-  background: rgba(242, 245, 239, 0.26);
+  background: rgba(238, 242, 251, 0.26);
 }
 .sb-mix-cap,
 .sb-hint {
@@ -900,7 +900,7 @@ button {
   color: var(--reference);
 }
 .matrix-table td.saddle {
-  background: rgba(255, 207, 51, 0.16);
+  background: rgba(246, 181, 60, 0.18);
   color: var(--strike);
   font-weight: 700;
 }
