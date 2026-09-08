@@ -1,8 +1,9 @@
 import { useMemo } from 'react'
 
 /*
- * A televised penalty view — night stadium, real goal, keeper and ball —
- * drawn entirely in inline SVG so it ships in the single Docker image.
+ * The penalty, drawn as a matchday-programme illustration — printed cream,
+ * ink line-art, flat football colour. Geometry, timing and the phase machine
+ * are unchanged; only the paint is.
  *
  * Contract:
  *   phase    : 'idle' | 'windup' | 'flight' | 'result'
@@ -21,6 +22,8 @@ const CH = (GOAL.B - GOAL.T) / ROWS
 const SPOT = { x: 450, y: 502 }
 const KEEPER_FEET_Y = GOAL.B - 4
 
+const INK = '#1c1a13'
+
 function cell(row, col) {
   const x = GOAL.L + col * CW
   const y = GOAL.T + row * CH
@@ -31,7 +34,7 @@ function cell(row, col) {
 function buildCrowd() {
   let s = 918273
   const rnd = () => ((s = (s * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff)
-  const shirts = ['#e0463f', '#3f74e0', '#e8c249', '#eef1f6', '#4fae6b', '#e08a3c', '#9aa6bd', '#b8453f']
+  const shirts = ['#1c1a13', '#df3b26', '#d9982a', '#2f8f43', '#c9b98f', '#b5533a', '#3a5f8a', '#8a7f5c']
   const tiers = [
     { y0: 30, y1: 118 },
     { y0: 118, y1: 210 },
@@ -45,7 +48,7 @@ function buildCrowd() {
       y: t.y0 + rnd() * (t.y1 - t.y0),
       r: 1.5 + rnd() * 1.7,
       c: shirts[Math.floor(rnd() * shirts.length)],
-      o: 0.4 + rnd() * 0.5,
+      o: 0.55 + rnd() * 0.4,
     })
   }
   return dots
@@ -151,13 +154,13 @@ function Ball({ phase, shotZone, diveZone, outcome }) {
       {flying && <line className="ball-trail" x1={SPOT.x} y1={SPOT.y} x2={x} y2={y} />}
       <ellipse className="ball-shadow" cx={x} cy={flying ? GOAL.B + 10 : SPOT.y + 15} rx={flying ? 9 : 16} ry={flying ? 3 : 5.5} />
       <g className="ball" style={{ transform: `translate(${x}px, ${y}px) scale(${scale}) rotate(${spin}deg)` }}>
-        <circle r="15" fill="url(#ball-shade)" stroke="#c4c9d2" strokeWidth="0.6" />
-        <path d="M0 -8 L7.6 -2.5 4.7 6.5 -4.7 6.5 -7.6 -2.5 Z" fill="#20242e" />
-        <path d="M0 -15 L3.6 -9.5 -3.6 -9.5 Z" fill="#20242e" />
-        <path d="M15 -1.5 l-5.5 3.5 1.6 -7 Z" fill="#20242e" />
-        <path d="M-15 -1.5 l5.5 3.5 -1.6 -7 Z" fill="#20242e" />
-        <path d="M8 12 l-2.6 -5.4 5.4 1 Z" fill="#20242e" />
-        <path d="M-8 12 l2.6 -5.4 -5.4 1 Z" fill="#20242e" />
+        <circle r="15" fill="#fbf7ec" stroke={INK} strokeWidth="1.6" />
+        <path d="M0 -8 L7.6 -2.5 4.7 6.5 -4.7 6.5 -7.6 -2.5 Z" fill={INK} />
+        <path d="M0 -15 L3.6 -9.5 -3.6 -9.5 Z" fill={INK} />
+        <path d="M15 -1.5 l-5.5 3.5 1.6 -7 Z" fill={INK} />
+        <path d="M-15 -1.5 l5.5 3.5 -1.6 -7 Z" fill={INK} />
+        <path d="M8 12 l-2.6 -5.4 5.4 1 Z" fill={INK} />
+        <path d="M-8 12 l2.6 -5.4 -5.4 1 Z" fill={INK} />
       </g>
     </>
   )
@@ -186,7 +189,7 @@ export default function GoalField({
       <path
         key={i}
         d={`M${x0} ${VB_H} L${x1} ${VB_H} L${450 + (x1 - 450) * 0.34} ${GOAL.B} L${450 + (x0 - 450) * 0.34} ${GOAL.B} Z`}
-        fill={i % 2 ? '#2f9d47' : '#279141'}
+        fill={i % 2 ? '#2f8f43' : '#287c3a'}
       />,
     )
   }
@@ -204,36 +207,20 @@ export default function GoalField({
     <div className={`pitch phase-${phase}`}>
       <svg viewBox={`0 0 ${VB_W} ${VB_H}`} className="pitch-svg" role="group" aria-label="Penalty scene">
         <defs>
-          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#0a1226" />
-            <stop offset="100%" stopColor="#14224a" />
-          </linearGradient>
-          <linearGradient id="grass" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#1c7538" />
-            <stop offset="100%" stopColor="#33a24c" />
-          </linearGradient>
-          <radialGradient id="ball-shade" cx="38%" cy="32%" r="72%">
-            <stop offset="0%" stopColor="#ffffff" />
-            <stop offset="72%" stopColor="#eef0f4" />
-            <stop offset="100%" stopColor="#c2c7d1" />
-          </radialGradient>
           <radialGradient id="flood" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="rgba(255,248,220,0.6)" />
-            <stop offset="100%" stopColor="rgba(255,248,220,0)" />
-          </radialGradient>
-          <radialGradient id="vig" cx="50%" cy="44%" r="72%">
-            <stop offset="58%" stopColor="rgba(0,0,0,0)" />
-            <stop offset="100%" stopColor="rgba(0,0,0,0.42)" />
+            <stop offset="0%" stopColor="rgba(217,152,42,0.4)" />
+            <stop offset="100%" stopColor="rgba(217,152,42,0)" />
           </radialGradient>
           <clipPath id="mouth">
             <rect x={GOAL.L} y={GOAL.T} width={GOAL.R - GOAL.L} height={GOAL.B - GOAL.T} />
           </clipPath>
         </defs>
 
-        {/* stadium */}
-        <rect x="0" y="0" width={VB_W} height={GOAL.B} fill="url(#sky)" />
-        <path d={`M0 ${GOAL.B} L0 88 Q450 -6 ${VB_W} 88 L${VB_W} ${GOAL.B} Z`} fill="#0e1a3e" />
-        <path d={`M0 ${GOAL.B} L0 160 Q450 92 ${VB_W} 160 L${VB_W} ${GOAL.B} Z`} fill="#122049" opacity="0.9" />
+        {/* printed sky + stands */}
+        <rect x="0" y="0" width={VB_W} height={GOAL.B} fill="#e8dbba" />
+        <path d={`M0 ${GOAL.B} L0 88 Q450 -6 ${VB_W} 88 L${VB_W} ${GOAL.B} Z`} fill="#dcca9f" />
+        <path d={`M0 ${GOAL.B} L0 160 Q450 92 ${VB_W} 160 L${VB_W} ${GOAL.B} Z`} fill="#d2bd88" opacity="0.92" />
+        <line x1="0" y1={GOAL.B} x2={VB_W} y2={GOAL.B} stroke={INK} strokeWidth="2" opacity="0.5" />
         <g className="crowd">
           {crowd.map((d, i) => (
             <circle key={i} cx={d.x} cy={d.y} r={d.r} fill={d.c} opacity={d.o} />
@@ -241,36 +228,36 @@ export default function GoalField({
         </g>
         {[128, 772].map((x) => (
           <g key={x} className="flood">
-            <rect x={x - 30} y="6" width="60" height="13" rx="3" fill="#cdd0da" />
-            <rect x={x - 3} y="19" width="6" height="24" fill="#8b8f9c" />
+            <rect x={x - 30} y="6" width="60" height="13" rx="2" fill={INK} />
+            <rect x={x - 3} y="19" width="6" height="24" fill={INK} />
             <circle cx={x} cy="13" r="66" fill="url(#flood)" />
           </g>
         ))}
 
         {/* pitch */}
-        <rect x="0" y={GOAL.B} width={VB_W} height={VB_H - GOAL.B} fill="url(#grass)" />
-        <g opacity="0.45">{stripes}</g>
+        <rect x="0" y={GOAL.B} width={VB_W} height={VB_H - GOAL.B} fill="#2b8340" />
+        <g opacity="0.5">{stripes}</g>
         <path
           d={`M${SPOT.x - 232} ${VB_H} Q${SPOT.x} ${GOAL.B + 30} ${SPOT.x + 232} ${VB_H}`}
           fill="none"
-          stroke="rgba(255,255,255,0.55)"
+          stroke="rgba(251,247,236,0.85)"
           strokeWidth="3"
         />
         <path
           d={`M150 ${VB_H} L${VB_W - 150} ${VB_H} L${VB_W - 292} ${GOAL.B + 6} L292 ${GOAL.B + 6} Z`}
           fill="none"
-          stroke="rgba(255,255,255,0.5)"
+          stroke="rgba(251,247,236,0.8)"
           strokeWidth="3"
         />
-        <ellipse cx={SPOT.x} cy={SPOT.y + 3} rx="4" ry="2.4" fill="#fff" />
+        <ellipse cx={SPOT.x} cy={SPOT.y + 3} rx="4" ry="2.4" fill="#fbf7ec" />
 
-        {/* goal */}
-        <rect x={GOAL.L + 12} y={GOAL.T + 8} width={GOAL.R - GOAL.L - 24} height={GOAL.B - GOAL.T - 8} fill="rgba(9,16,38,0.5)" />
+        {/* goal — ink line-art */}
+        <rect x={GOAL.L + 12} y={GOAL.T + 8} width={GOAL.R - GOAL.L - 24} height={GOAL.B - GOAL.T - 8} fill="rgba(28,26,19,0.06)" />
         <g className="net" clipPath="url(#mouth)">{net}</g>
         <g className="goal-frame">
-          <rect x={GOAL.L - 7} y={GOAL.T - 7} width="12" height={GOAL.B - GOAL.T + 7} rx="5" fill="#f3f5f9" />
-          <rect x={GOAL.R - 5} y={GOAL.T - 7} width="12" height={GOAL.B - GOAL.T + 7} rx="5" fill="#f3f5f9" />
-          <rect x={GOAL.L - 7} y={GOAL.T - 7} width={GOAL.R - GOAL.L + 14} height="12" rx="5" fill="#ffffff" />
+          <rect x={GOAL.L - 7} y={GOAL.T - 7} width="11" height={GOAL.B - GOAL.T + 7} rx="2" fill={INK} />
+          <rect x={GOAL.R - 4} y={GOAL.T - 7} width="11" height={GOAL.B - GOAL.T + 7} rx="2" fill={INK} />
+          <rect x={GOAL.L - 7} y={GOAL.T - 7} width={GOAL.R - GOAL.L + 14} height="11" rx="2" fill={INK} />
         </g>
 
         {/* keeper + ball */}
@@ -287,7 +274,7 @@ export default function GoalField({
               className={`zone ${sel ? 'is-selected' : ''} ${interactive ? 'is-live' : ''}`}
               onClick={() => interactive && onSelect?.(zone.key)}
             >
-              <rect x={r.x + 3} y={r.y + 3} width={r.w - 6} height={r.h - 6} rx="5" />
+              <rect x={r.x + 3} y={r.y + 3} width={r.w - 6} height={r.h - 6} rx="3" />
               <circle className="zone-ring" cx={r.cx} cy={r.cy} r="15" />
               <text x={r.cx} y={r.y + 17} textAnchor="middle" className="zone-tag">
                 {zone.short}
@@ -306,8 +293,6 @@ export default function GoalField({
             {outcome === 'goal' ? 'GOAL' : 'SAVED'}
           </text>
         )}
-
-        <rect x="0" y="0" width={VB_W} height={VB_H} fill="url(#vig)" pointerEvents="none" />
       </svg>
       <p className="pitch-caption">{mode === 'shoot' ? 'Pick your corner' : 'Pick your side'}</p>
     </div>

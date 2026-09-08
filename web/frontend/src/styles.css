@@ -479,11 +479,10 @@ button {
   min-width: 0;
 }
 .pitch {
-  border: 1px solid #0a1b3a;
-  border-radius: var(--radius);
+  border: 1.5px solid var(--ink);
+  border-radius: 2px;
   overflow: hidden;
-  background: #0c1730;
-  box-shadow: 0 20px 40px -24px rgba(0, 0, 0, 0.6);
+  background: var(--paper);
 }
 .pitch-svg {
   display: block;
@@ -503,13 +502,12 @@ button {
 }
 .pitch-caption {
   margin: 0;
-  padding: 9px 14px;
-  font-weight: 800;
+  padding: 10px 16px;
+  font-weight: 700;
   font-size: 0.92rem;
   letter-spacing: 0.02em;
-  color: var(--muted);
-  background: #0a1428;
-  border-top: 1px solid #0a1b3a;
+  color: var(--knock);
+  background: var(--ink);
 }
 .pitch-error {
   margin: 8px 2px 0;
@@ -534,11 +532,11 @@ button {
   }
 }
 .net line {
-  stroke: rgba(255, 255, 255, 0.14);
+  stroke: rgba(28, 26, 19, 0.26);
   stroke-width: 1;
 }
 .goal-frame {
-  filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.45));
+  filter: drop-shadow(0 2px 0 rgba(28, 26, 19, 0.18));
 }
 
 .gk,
@@ -554,36 +552,40 @@ button {
   transition: transform 0.55s cubic-bezier(0.3, 0.72, 0.28, 1);
 }
 .gk-shadow {
-  fill: rgba(0, 0, 0, 0.32);
+  fill: rgba(28, 26, 19, 0.16);
 }
 .gk-skin {
   fill: #e7b48c;
+  stroke: #1c1a13;
+  stroke-width: 1.4;
 }
 .gk-hair {
-  fill: #35271c;
+  fill: #1c1a13;
 }
 .gk-kit {
-  fill: #eae54b;
+  fill: #e6c33f;
+  stroke: #1c1a13;
+  stroke-width: 2;
 }
 .gk-kit-line {
-  stroke: #eae54b;
+  stroke: #e6c33f;
   stroke-width: 7;
   stroke-linecap: round;
   fill: none;
 }
 .gk-shorts,
 .gk-sock {
-  fill: #1f2937;
+  fill: #1c1a13;
 }
 .gk-num {
-  fill: #1f2937;
+  fill: #1c1a13;
   font-weight: 800;
   font-size: 11px;
 }
 .gk-glove {
-  fill: #ececec;
-  stroke: #b7b7b7;
-  stroke-width: 1.5;
+  fill: #fbf7ec;
+  stroke: #1c1a13;
+  stroke-width: 2;
 }
 
 .ball {
@@ -607,7 +609,7 @@ button {
   }
 }
 .ball-shadow {
-  fill: rgba(0, 0, 0, 0.3);
+  fill: rgba(28, 26, 19, 0.18);
 }
 .pitch.phase-windup .ball-shadow,
 .pitch.phase-flight .ball-shadow,
@@ -615,10 +617,10 @@ button {
   transition: cx 0.66s cubic-bezier(0.32, 0.68, 0.3, 1), rx 0.66s, ry 0.66s;
 }
 .ball-trail {
-  stroke: #fff;
+  stroke: #1c1a13;
   stroke-width: 2;
-  stroke-dasharray: 1 10;
-  opacity: 0.5;
+  stroke-dasharray: 1 9;
+  opacity: 0.55;
   animation: trail 0.66s ease forwards;
 }
 @keyframes trail {
@@ -628,8 +630,8 @@ button {
 }
 
 .zone rect {
-  fill: rgba(255, 255, 255, 0.03);
-  stroke: rgba(255, 255, 255, 0.14);
+  fill: rgba(28, 26, 19, 0.015);
+  stroke: rgba(28, 26, 19, 0.2);
   stroke-width: 1;
   transition: fill 0.13s;
 }
@@ -637,16 +639,16 @@ button {
   cursor: pointer;
 }
 .zone.is-live:hover rect {
-  fill: rgba(108, 140, 255, 0.24);
+  fill: rgba(217, 152, 42, 0.28);
 }
 .zone.is-selected rect {
-  fill: rgba(57, 217, 138, 0.26) !important;
-  stroke: var(--accent-2);
-  stroke-width: 2;
+  fill: rgba(223, 59, 38, 0.16) !important;
+  stroke: #df3b26;
+  stroke-width: 2.5;
 }
 .zone-ring {
   fill: none;
-  stroke: var(--accent-2);
+  stroke: #df3b26;
   stroke-width: 2.5;
   opacity: 0;
   transition: opacity 0.13s;
@@ -664,7 +666,7 @@ button {
   }
 }
 .zone-tag {
-  fill: rgba(255, 255, 255, 0.42);
+  fill: rgba(28, 26, 19, 0.5);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -672,17 +674,18 @@ button {
 }
 
 .shout {
-  font-weight: 800;
-  font-size: 40px;
-  letter-spacing: 0.05em;
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 46px;
+  letter-spacing: 0.03em;
   animation: shout 0.34s cubic-bezier(0.2, 1.5, 0.4, 1) both;
-  filter: drop-shadow(0 3px 7px rgba(0, 0, 0, 0.6));
+  filter: drop-shadow(0 2px 0 rgba(28, 26, 19, 0.25));
 }
 .shout-goal {
-  fill: var(--warn);
+  fill: #df3b26;
 }
 .shout-save {
-  fill: #eae54b;
+  fill: #1c1a13;
 }
 @keyframes shout {
   from {
@@ -693,13 +696,6 @@ button {
 /* ===================================================================== */
 /*  ▲▲▲  END preserved pitch scene  ▲▲▲                                  */
 /* ===================================================================== */
-
-/* dark match feed matted like a printed photo on the cream page */
-.pitch-wrap {
-  padding: 5px;
-  background: var(--ink);
-  border-radius: 3px;
-}
 
 /* ---------- shootout results box ---------- */
 .scoreboard {
