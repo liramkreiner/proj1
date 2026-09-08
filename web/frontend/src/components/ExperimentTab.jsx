@@ -51,7 +51,7 @@ export default function ExperimentTab({ baseEquilibrium, defaultValues, onApply 
   return (
     <div className="tab-stack">
       <section className="card">
-        <h3>Experiment — edit the payoff matrix</h3>
+        <h3>Edit the payoff matrix</h3>
         <p className="muted">
           Change any scoring probabilities (0–1), then recalculate. The solver is generic: it
           re-runs the same linear program, re-detects saddle points, and the Play-tab AI immediately

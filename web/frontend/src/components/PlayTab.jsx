@@ -146,8 +146,8 @@ export default function PlayTab({ zones, activeMatrix = null }) {
       ? 'You win the shootout'
       : 'AI wins the shootout'
     : st.phase === 'suddenDeath'
-      ? `Sudden death — ${isYourKick ? 'your kick' : 'your save'}`
-      : `Kick ${roundNo} of ${REG} — ${isYourKick ? 'your kick' : 'your save'}`
+      ? `Sudden death, ${isYourKick ? 'your kick' : 'your save'}`
+      : `Kick ${roundNo} of ${REG}, ${isYourKick ? 'your kick' : 'your save'}`
 
   return (
     <div className="duel">

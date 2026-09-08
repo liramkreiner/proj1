@@ -20,7 +20,7 @@ export default function DashboardTab({ equilibrium }) {
   return (
     <div className="tab-stack">
       <section className="card">
-        <h3>Payoff matrix — P(score | shot, dive)</h3>
+        <h3>Payoff matrix</h3>
         <p className="muted">
           Entry A[i,j] is the shooter's payoff; the goalkeeper's payoff is −A[i,j], so the game is
           zero-sum. Row minima and column maxima drive the pure-strategy bounds.

@@ -309,7 +309,7 @@ export default function GoalField({
 
         <rect x="0" y="0" width={VB_W} height={VB_H} fill="url(#vig)" pointerEvents="none" />
       </svg>
-      <p className="pitch-caption">{mode === 'shoot' ? 'Your kick pick a corner' : 'Your save pick a side'}</p>
+      <p className="pitch-caption">{mode === 'shoot' ? 'Pick your corner' : 'Pick your side'}</p>
     </div>
   )
 }

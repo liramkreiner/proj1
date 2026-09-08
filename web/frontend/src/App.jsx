@@ -9,18 +9,18 @@ import SimulationTab from './components/SimulationTab'
 
 const TABS = [
   { id: 'play', label: 'Play' },
-  { id: 'dashboard', label: 'Game Theory' },
+  { id: 'dashboard', label: 'Game theory' },
   { id: 'simulation', label: 'Simulation' },
   { id: 'experiment', label: 'Experiment' },
-  { id: 'explain', label: 'Explanation' },
+  { id: 'explain', label: 'The maths' },
 ]
 
 export default function App() {
   const [tab, setTab] = useState('play')
   const [config, setConfig] = useState(null)
-  const [equilibrium, setEquilibrium] = useState(null) // analysis for the ACTIVE matrix
-  const [baseEquilibrium, setBaseEquilibrium] = useState(null) // default matrix analysis
-  const [activeMatrix, setActiveMatrix] = useState(null) // null => backend default
+  const [equilibrium, setEquilibrium] = useState(null)
+  const [baseEquilibrium, setBaseEquilibrium] = useState(null)
+  const [activeMatrix, setActiveMatrix] = useState(null)
   const [error, setError] = useState(null)
 
   useEffect(() => {
@@ -41,43 +41,45 @@ export default function App() {
   if (error) {
     return (
       <div className="app">
-        <div className="card error-banner">Could not start: {error}</div>
+        <p className="boot boot-error">Couldn't reach the analysis engine. {error}</p>
       </div>
     )
   }
-
   if (!config || !equilibrium) {
     return (
       <div className="app">
-        <div className="card muted">Loading the game-theory engine…</div>
+        <p className="boot">Loading the shootout…</p>
       </div>
     )
   }
 
-  const zones = config.zones
   const customActive = activeMatrix !== null
 
   return (
     <div className="app">
-      <header className="app-header">
-        <div>
-          <p className="eyebrow">Zero-sum game · mixed-strategy Nash equilibrium</p>
-          <h1>Tactical Penalty Shootout Simulator</h1>
+      <header className="masthead">
+        <div className="masthead-title">
+          <h1>Penalty shootout</h1>
+          <p>
+            A zero-sum game you can play. The keeper's dive is drawn from the mixed-strategy Nash
+            equilibrium of the payoff matrix, never a hunch.
+          </p>
         </div>
-        <div className="header-value">
-          <span>Game value</span>
+        <div className="bug">
+          <span className="bug-dot" aria-hidden="true" />
+          <span className="bug-label">Game value</span>
           <strong>{pct(equilibrium.game_value)}</strong>
-          {customActive && <em>custom matrix</em>}
+          {customActive && <span className="bug-note">custom matrix</span>}
         </div>
       </header>
 
-      <nav className="tabbar">
+      <nav className="tabbar" aria-label="Views">
         {TABS.map((entry) => (
           <button
             key={entry.id}
+            type="button"
             className={tab === entry.id ? 'active' : ''}
             onClick={() => setTab(entry.id)}
-            type="button"
           >
             {entry.label}
           </button>
@@ -85,7 +87,7 @@ export default function App() {
       </nav>
 
       <main>
-        {tab === 'play' && <PlayTab zones={zones} activeMatrix={activeMatrix} />}
+        {tab === 'play' && <PlayTab zones={config.zones} activeMatrix={activeMatrix} />}
         {tab === 'dashboard' && <DashboardTab equilibrium={equilibrium} />}
         {tab === 'simulation' && <SimulationTab activeMatrix={activeMatrix} config={config} />}
         {tab === 'experiment' && (
@@ -99,8 +101,8 @@ export default function App() {
       </main>
 
       <footer className="app-footer">
-        Shooter maximises P(score); goalkeeper minimises it. Solver: <code>scipy.optimize.linprog</code>{' '}
-        (HiGHS). All strategies validated against the minimax conditions.
+        The striker maximises the chance of scoring, the keeper minimises it. Solved with{' '}
+        <code>scipy.optimize.linprog</code> and checked against the minimax conditions on every run.
       </footer>
     </div>
   )
