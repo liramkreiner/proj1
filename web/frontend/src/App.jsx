@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from './api'
-import { pct } from './format'
 import DashboardTab from './components/DashboardTab'
+import EquilibriumHero from './components/EquilibriumHero'
 import ExperimentTab from './components/ExperimentTab'
 import ExplanationTab from './components/ExplanationTab'
 import PlayTab from './components/PlayTab'
@@ -48,30 +48,25 @@ export default function App() {
   if (!config || !equilibrium) {
     return (
       <div className="app">
-        <p className="boot">Loading the shootout…</p>
+        <p className="boot">Setting up the shootout…</p>
       </div>
     )
   }
 
-  const customActive = activeMatrix !== null
-
   return (
     <div className="app">
       <header className="masthead">
-        <div className="masthead-title">
-          <h1>Penalty shootout</h1>
-          <p>
-            A zero-sum game you can play. The keeper's dive is drawn from the mixed-strategy Nash
-            equilibrium of the payoff matrix, never a hunch.
-          </p>
-        </div>
-        <div className="bug">
-          <span className="bug-dot" aria-hidden="true" />
-          <span className="bug-label">Game value</span>
-          <strong>{pct(equilibrium.game_value)}</strong>
-          {customActive && <span className="bug-note">custom matrix</span>}
-        </div>
+        <h1>Penalty shootout</h1>
+        <p className="masthead-sub">
+          A zero-sum game you can play: six corners, one guess each, taken at the same instant. The
+          keeper's dive comes straight from the mixed-strategy Nash equilibrium of the payoff matrix.
+        </p>
       </header>
+
+      <EquilibriumHero equilibrium={equilibrium} />
+      {activeMatrix !== null && (
+        <p className="matrix-flag">You are playing a custom payoff matrix. Reset it in Experiment.</p>
+      )}
 
       <nav className="tabbar" aria-label="Views">
         {TABS.map((entry) => (

@@ -1,30 +1,33 @@
 /* ===================================================================== */
-/*  Penalty Shootout — broadcast graphics package                         */
-/*  Barlow Condensed (scoreline / titles) + IBM Plex Sans (everything).   */
-/*  The pitch scene block below is preserved verbatim — do not restyle.   */
+/*  Penalty Shootout — chalkboard-cinema                                  */
+/*  Chivo (display / scoreline) + IBM Plex Sans (reading).               */
+/*  The hero is the equilibrium drawn on two goals. One motif: the grid. */
+/*  The pitch scene block is preserved verbatim between the fences.       */
 /* ===================================================================== */
 
 :root {
-  --pitch: #0b1a12;
-  --panel: #12261b;
-  --panel-2: #16311f;
-  --rule: #294c37;
-  --ink: #eef4ee;
-  --ink-dim: #90a996;
-  --signal: #ffd23f;
-  --chalk: #f4f7f4;
-  --danger: #ff6a4d;
+  --void: #071410;
+  --turf-dark: #0c1f16;
+  --turf: #12291d;
+  --turf-2: #17331f;
+  --edge: #274b38;
+  --edge-soft: #1c3a2a;
+  --chalk: #f2f5ef;
+  --chalk-dim: #86a390;
+  --strike: #ffcf33;
+  --save: #ff6a4d;
+  --reference: #6fb2c9;
 
-  /* legacy names the preserved pitch block still reads */
-  --muted: var(--ink-dim);
-  --bad: var(--danger);
-  --warn: var(--signal);
+  /* legacy names the preserved pitch block reads — do not repurpose */
+  --muted: var(--chalk-dim);
+  --bad: var(--save);
+  --warn: var(--strike);
   --accent-2: #39d98a;
-  --radius: 4px;
+  --radius: 6px;
 
-  --display: 'Barlow Condensed', 'Arial Narrow', system-ui, sans-serif;
+  --display: 'Chivo', 'Arial Black', system-ui, sans-serif;
   --text: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --mono: ui-monospace, 'Cascadia Code', 'JetBrains Mono', Consolas, monospace;
+  --mono: 'Chivo Mono', ui-monospace, Consolas, monospace;
 
   color-scheme: dark;
 }
@@ -38,12 +41,25 @@ body {
   font-family: var(--text);
   font-size: 16px;
   line-height: 1.6;
-  color: var(--ink);
-  background-color: var(--pitch);
+  color: var(--chalk);
+  background-color: var(--void);
   background-image:
-    radial-gradient(1100px 520px at 78% -12%, rgba(255, 210, 63, 0.06), transparent 60%),
-    linear-gradient(180deg, #0c1d13 0%, var(--pitch) 46%);
+    radial-gradient(1200px 640px at 82% -14%, rgba(255, 207, 51, 0.07), transparent 62%),
+    radial-gradient(900px 520px at -8% 8%, rgba(111, 178, 201, 0.05), transparent 55%),
+    linear-gradient(180deg, #0a1c13 0%, var(--void) 44%);
   -webkit-font-smoothing: antialiased;
+}
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(120% 90% at 50% 40%, transparent 58%, rgba(0, 0, 0, 0.5) 100%);
+  z-index: 1;
+}
+#root {
+  position: relative;
+  z-index: 2;
 }
 
 h1,
@@ -52,132 +68,190 @@ h3,
 h4 {
   margin: 0 0 0.5rem;
   font-family: var(--display);
-  font-weight: 600;
-  line-height: 1.12;
-  letter-spacing: -0.005em;
-  color: var(--ink);
-}
-h1 {
   font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  color: var(--chalk);
 }
 h3 {
-  font-size: 1.4rem;
+  font-size: 1.35rem;
 }
 h4 {
-  font-size: 1.12rem;
+  font-size: 1.08rem;
 }
 p {
   margin: 0.5rem 0;
   max-width: 66ch;
 }
 a {
-  color: var(--signal);
+  color: var(--strike);
 }
 code {
   font-family: var(--mono);
-  font-weight: 500;
-  font-size: 0.9em;
-  background: rgba(255, 210, 63, 0.13);
-  padding: 0.05em 0.35em;
-  border-radius: 2px;
+  font-size: 0.86em;
+  background: rgba(255, 207, 51, 0.12);
+  padding: 0.08em 0.4em;
+  border-radius: 3px;
 }
 pre {
-  background: var(--pitch);
-  border: 1px solid var(--rule);
-  border-radius: 3px;
-  padding: 12px 14px;
+  background: var(--void);
+  border: 1px solid var(--edge);
+  border-radius: 4px;
+  padding: 13px 15px;
   overflow-x: auto;
   font-family: var(--mono);
-  font-size: 0.9rem;
-  line-height: 1.55;
-  color: var(--ink);
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--chalk);
 }
 :focus-visible {
-  outline: 2px solid var(--signal);
+  outline: 2px solid var(--strike);
   outline-offset: 2px;
 }
 
 .app {
-  max-width: 1160px;
+  max-width: 1180px;
   margin: 0 auto;
-  padding: 34px 22px 52px;
+  padding: 40px 24px 56px;
 }
 .boot {
-  padding: 60px 0;
-  color: var(--ink-dim);
+  padding: 64px 0;
+  color: var(--chalk-dim);
 }
 .boot-error {
-  color: var(--danger);
+  color: var(--save);
 }
 
-/* ---------- masthead: title + a live scorebug ---------- */
+/* ---------- masthead ---------- */
 .masthead {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 20px 32px;
-  flex-wrap: wrap;
-  padding-bottom: 16px;
-  border-bottom: 2px solid var(--rule);
+  max-width: 62ch;
 }
 .masthead h1 {
-  font-size: clamp(2.4rem, 5.2vw, 3.5rem);
-  line-height: 0.94;
+  font-weight: 900;
+  font-size: clamp(2.7rem, 6.4vw, 4.6rem);
+  line-height: 0.9;
+  letter-spacing: -0.03em;
   margin: 0;
 }
-.masthead p {
-  margin: 0.55rem 0 0;
-  max-width: 48ch;
-  color: var(--ink-dim);
-  font-size: 1rem;
+.masthead-sub {
+  margin: 0.9rem 0 0;
+  color: var(--chalk-dim);
+  font-size: 1.05rem;
+  max-width: 58ch;
 }
-.bug {
-  display: inline-flex;
+
+/* ---------- hero: the equilibrium on two goals ---------- */
+.eq-hero {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 9px;
-  background: var(--panel);
-  border: 1px solid var(--rule);
-  border-left: 3px solid var(--signal);
-  padding: 9px 15px;
+  gap: 30px 44px;
+  margin: 26px 0 8px;
+  padding: 22px 24px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.028), transparent 40%), var(--turf-dark);
+  border: 1px solid var(--edge);
+  border-radius: 8px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 30px 60px -40px rgba(0, 0, 0, 0.8);
 }
-.bug-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--signal);
-  animation: live 2.4s ease-in-out infinite;
+.eq-goals {
+  display: flex;
+  gap: 30px;
+  flex-wrap: wrap;
 }
-@keyframes live {
-  50% {
-    opacity: 0.3;
-  }
+.mini-goal {
+  margin: 0;
 }
-.bug-label {
-  font-size: 0.72rem;
-  letter-spacing: 0.03em;
-  color: var(--ink-dim);
+.mini-goal figcaption {
+  font-size: 0.78rem;
+  color: var(--chalk-dim);
+  margin-bottom: 8px;
 }
-.bug strong {
+.mg-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 58px);
+  grid-template-rows: repeat(2, 42px);
+  gap: 2px;
+  padding: 5px;
+  border: 2px solid var(--chalk);
+  border-bottom-width: 1px;
+  border-bottom-color: var(--edge);
+  background: rgba(0, 0, 0, 0.25);
+}
+.mg-cell {
+  position: relative;
+  border: 1px solid var(--edge-soft);
+  background: color-mix(in srgb, var(--tone) calc(var(--w) * 88%), transparent);
+  animation: cell-in 0.42s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+  animation-delay: calc(var(--i) * 45ms + 120ms);
+}
+.mg-strike {
+  --tone: var(--strike);
+}
+.mg-save {
+  --tone: var(--save);
+}
+.mg-code {
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  color: rgba(242, 245, 239, 0.55);
+}
+.mg-pct {
+  position: absolute;
+  right: 4px;
+  bottom: 3px;
   font-family: var(--display);
   font-weight: 700;
-  font-size: 1.9rem;
-  line-height: 1;
-  color: var(--signal);
+  font-size: 0.82rem;
+  color: var(--chalk);
   font-variant-numeric: tabular-nums;
 }
-.bug-note {
-  font-size: 0.68rem;
-  color: var(--signal);
-  opacity: 0.8;
+@keyframes cell-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+.eq-value {
+  min-width: 190px;
+  margin-left: auto;
+}
+.eq-value span {
+  font-size: 0.82rem;
+  color: var(--chalk-dim);
+}
+.eq-value strong {
+  display: block;
+  font-family: var(--display);
+  font-weight: 900;
+  font-size: clamp(3.2rem, 8vw, 5rem);
+  line-height: 0.82;
+  letter-spacing: -0.03em;
+  color: var(--strike);
+  font-variant-numeric: tabular-nums;
+  margin: 4px 0 8px;
+}
+.eq-value p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--chalk-dim);
+  max-width: 30ch;
+}
+.matrix-flag {
+  margin: 12px 0 0;
+  font-size: 0.85rem;
+  color: var(--strike);
 }
 
 /* ---------- tab strip ---------- */
 .tabbar {
   display: flex;
   flex-wrap: wrap;
-  gap: 2px 22px;
-  margin: 18px 0 26px;
-  border-bottom: 2px solid var(--rule);
+  gap: 4px 26px;
+  margin: 26px 0 26px;
+  border-bottom: 1px solid var(--edge);
 }
 .tabbar button {
   position: relative;
@@ -185,64 +259,77 @@ pre {
   background: none;
   font-family: var(--text);
   font-weight: 600;
-  font-size: 0.98rem;
-  color: var(--ink-dim);
-  padding: 9px 2px 13px;
+  font-size: 1rem;
+  color: var(--chalk-dim);
+  padding: 10px 2px 14px;
   cursor: pointer;
   transition: color 0.12s;
 }
 .tabbar button:hover {
-  color: var(--ink);
+  color: var(--chalk);
 }
 .tabbar button.active {
-  color: var(--ink);
+  color: var(--chalk);
 }
 .tabbar button.active::after {
   content: '';
   position: absolute;
   left: 0;
   right: 0;
-  bottom: -2px;
+  bottom: -1px;
   height: 3px;
-  background: var(--signal);
+  background: var(--strike);
 }
 
 .app-footer {
-  margin-top: 40px;
-  padding-top: 16px;
-  border-top: 2px solid var(--rule);
-  color: var(--ink-dim);
+  margin-top: 44px;
+  padding-top: 18px;
+  border-top: 1px solid var(--edge);
+  color: var(--chalk-dim);
   font-size: 0.88rem;
-  max-width: 72ch;
+  max-width: 74ch;
 }
 
 /* ---------- cards & generic ---------- */
 .card {
-  background: var(--panel);
-  border: 1px solid var(--rule);
-  border-radius: 4px;
-  padding: 18px 20px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.022), transparent 32%), var(--turf-dark);
+  border: 1px solid var(--edge);
+  border-radius: 7px;
+  padding: 20px 22px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 24px 48px -36px rgba(0, 0, 0, 0.75);
+}
+.card h3 {
+  position: relative;
+  padding-left: 14px;
+}
+.card h3::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.18em;
+  width: 4px;
+  height: 0.82em;
+  background: var(--strike);
 }
 .tab-stack {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 }
 .two-col {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 18px;
 }
 .muted {
-  color: var(--ink-dim);
+  color: var(--chalk-dim);
   font-size: 0.92rem;
 }
 .center {
   text-align: center;
 }
 .fine-print {
-  color: var(--ink-dim);
+  color: var(--chalk-dim);
   font-size: 0.82rem;
 }
 
@@ -254,64 +341,67 @@ button {
   gap: 10px;
   align-items: center;
   flex-wrap: wrap;
-  margin-top: 14px;
+  margin-top: 16px;
 }
 .button-row button,
 .sim-controls button,
 .preset-row button {
-  border: 1px solid var(--rule);
-  background: transparent;
-  color: var(--ink);
+  border: 1px solid var(--edge);
+  background: var(--turf);
+  color: var(--chalk);
   font-family: inherit;
   font-weight: 600;
   padding: 9px 16px;
-  border-radius: 3px;
+  border-radius: 4px;
   cursor: pointer;
-  transition: background 0.12s, color 0.12s;
+  transition: border-color 0.12s, background 0.12s;
 }
 .button-row button:hover:not(:disabled),
 .sim-controls button:hover:not(:disabled),
 .preset-row button:hover:not(:disabled) {
-  background: var(--rule);
+  border-color: var(--chalk-dim);
+  background: var(--turf-2);
 }
 .button-row button:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 .button-row button.primary {
-  background: var(--signal);
-  border-color: var(--signal);
-  color: var(--pitch);
+  background: var(--strike);
+  border-color: var(--strike);
+  color: var(--void);
+  font-weight: 700;
 }
 .button-row button.primary:hover:not(:disabled) {
-  filter: brightness(1.08);
+  filter: brightness(1.07);
 }
 
 .pill {
   display: inline-block;
-  padding: 2px 9px;
-  border: 1.5px solid currentColor;
-  border-radius: 2px;
+  padding: 3px 10px;
+  border: 1px solid currentColor;
+  border-radius: 3px;
   font-size: 0.73rem;
   font-weight: 700;
 }
 .pill-ok {
-  color: var(--signal);
+  color: var(--strike);
 }
 .pill-bad {
-  color: var(--danger);
+  color: var(--save);
 }
 .pill-warn {
-  color: var(--accent-2);
+  color: var(--reference);
 }
 .error-banner {
-  border: 1px solid var(--danger);
+  border: 1px solid var(--save);
   border-left-width: 3px;
-  background: rgba(255, 106, 77, 0.08);
+  background: rgba(255, 106, 77, 0.09);
   color: #ffd2c8;
-  padding: 10px 12px;
+  padding: 11px 13px;
   margin-top: 10px;
   font-size: 0.9rem;
+  border-radius: 4px;
 }
 
 /* ---------- analysis: metric grid + hero stat ---------- */
@@ -319,81 +409,84 @@ button {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 1px;
-  background: var(--rule);
-  border: 1px solid var(--rule);
-  margin: 12px 0;
+  background: var(--edge);
+  border: 1px solid var(--edge);
+  border-radius: 5px;
+  overflow: hidden;
+  margin: 14px 0;
 }
 .metric-grid div {
-  background: var(--panel);
-  padding: 12px 14px;
+  background: var(--turf-dark);
+  padding: 13px 15px;
 }
 .metric-grid span {
   display: block;
   font-size: 0.78rem;
-  color: var(--ink-dim);
+  color: var(--chalk-dim);
 }
 .metric-grid strong {
   font-family: var(--display);
-  font-weight: 600;
-  font-size: 1.45rem;
+  font-weight: 700;
+  font-size: 1.5rem;
   font-variant-numeric: tabular-nums;
 }
 .metric-grid.big strong {
-  font-weight: 700;
-  font-size: 2rem;
-  color: var(--signal);
+  font-weight: 900;
+  font-size: 2.1rem;
+  color: var(--strike);
 }
 
 .game-value-card {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 3px;
-  background: var(--panel-2);
-  border-left: 3px solid var(--signal);
+  gap: 4px;
+  background: var(--turf-2);
+  border-left: 3px solid var(--strike);
 }
 .game-value-card span {
-  color: var(--ink-dim);
+  color: var(--chalk-dim);
   font-size: 0.85rem;
 }
 .game-value-card strong {
   font-family: var(--display);
-  font-weight: 700;
-  font-size: clamp(2.8rem, 6vw, 4rem);
-  line-height: 0.88;
-  color: var(--signal);
+  font-weight: 900;
+  font-size: clamp(3rem, 6.5vw, 4.4rem);
+  line-height: 0.82;
+  letter-spacing: -0.03em;
+  color: var(--strike);
   font-variant-numeric: tabular-nums;
 }
 
 .check-list {
   list-style: none;
-  margin: 10px 0 0;
+  margin: 12px 0 0;
   padding: 0;
 }
 .check-list li {
   position: relative;
-  padding: 6px 0 6px 18px;
-  border-bottom: 1px solid var(--rule);
+  padding: 7px 0 7px 18px;
+  border-bottom: 1px solid var(--edge);
   font-size: 0.9rem;
-  color: var(--ink-dim);
+  color: var(--chalk-dim);
 }
 .check-list li::before {
   content: '';
   position: absolute;
   left: 0;
-  top: 13px;
-  width: 7px;
-  height: 7px;
-  background: var(--signal);
+  top: 14px;
+  width: 6px;
+  height: 6px;
+  background: var(--strike);
 }
 
 /* ===================================================================== */
-/*  THE DUEL — pitch scene block is preserved verbatim below.             */
+/*  ▼▼▼  PRESERVED PITCH SCENE — verbatim, do not restyle  ▼▼▼           */
 /* ===================================================================== */
 .duel {
   display: grid;
   grid-template-columns: 1.75fr 1fr;
-  gap: 20px;
+  gap: 22px;
   align-items: start;
 }
 .pitch-wrap {
@@ -462,7 +555,6 @@ button {
   filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.45));
 }
 
-/* keeper — animate only while the ball is live; snap back on reset */
 .gk,
 .gk > g {
   transition: none;
@@ -508,7 +600,6 @@ button {
   stroke-width: 1.5;
 }
 
-/* ball — one smooth flight, then an instant reset (no fly-back) */
 .ball {
   transition: none;
 }
@@ -550,7 +641,6 @@ button {
   }
 }
 
-/* target zones */
 .zone rect {
   fill: rgba(255, 255, 255, 0.03);
   stroke: rgba(255, 255, 255, 0.14);
@@ -615,34 +705,36 @@ button {
   }
 }
 /* ===================================================================== */
-/*  END preserved pitch block.                                            */
+/*  ▲▲▲  END preserved pitch scene  ▲▲▲                                  */
 /* ===================================================================== */
 
-/* ---------- shootout bug (stacked broadcast graphic) ---------- */
+/* ---------- shootout bug ---------- */
 .scoreboard {
-  background: var(--panel);
-  border: 1px solid var(--rule);
-  border-left: 3px solid var(--signal);
-  border-radius: 4px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.022), transparent 30%), var(--turf-dark);
+  border: 1px solid var(--edge);
+  border-left: 3px solid var(--strike);
+  border-radius: 7px;
+  overflow: hidden;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 24px 48px -36px rgba(0, 0, 0, 0.75);
 }
 .sb-head {
   font-family: var(--display);
-  font-weight: 600;
-  font-size: 1.1rem;
-  letter-spacing: 0.01em;
-  color: var(--ink);
-  padding: 13px 18px;
-  border-bottom: 1px solid var(--rule);
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: -0.01em;
+  color: var(--chalk);
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--edge);
 }
 .sb-row {
   display: grid;
   grid-template-columns: 44px 1fr auto;
   align-items: center;
   gap: 12px;
-  padding: 13px 18px;
+  padding: 14px 18px;
 }
 .sb-row + .sb-row {
-  border-top: 1px solid var(--rule);
+  border-top: 1px solid var(--edge);
 }
 .sb-name {
   font-weight: 600;
@@ -657,59 +749,59 @@ button {
   width: 11px;
   height: 11px;
   border-radius: 50%;
-  border: 1.5px solid var(--rule);
+  border: 1.5px solid var(--edge);
   background: transparent;
 }
 .pip-goal {
-  background: var(--signal);
-  border-color: var(--signal);
+  background: var(--strike);
+  border-color: var(--strike);
 }
 .pip-miss {
   position: relative;
-  background: var(--rule);
-  border-color: var(--rule);
+  background: var(--edge);
+  border-color: var(--edge);
 }
 .pip-miss::after {
   content: '';
   position: absolute;
   inset: 2.5px;
   border-radius: 50%;
-  background: #5a7a63;
+  background: #46654f;
 }
 .sb-score {
   font-family: var(--display);
-  font-weight: 700;
-  font-size: 2.4rem;
-  line-height: 0.9;
-  color: var(--ink);
+  font-weight: 900;
+  font-size: 2.6rem;
+  line-height: 0.82;
+  color: var(--chalk);
   font-variant-numeric: tabular-nums;
-  min-width: 28px;
+  min-width: 30px;
   text-align: right;
 }
 .sb-row--ai .sb-score {
-  color: var(--ink-dim);
+  color: var(--chalk-dim);
 }
 .sb-status {
-  padding: 12px 18px;
-  border-top: 1px solid var(--rule);
+  padding: 13px 18px;
+  border-top: 1px solid var(--edge);
   font-weight: 600;
   font-size: 0.95rem;
 }
 .sb-status.is-sd {
-  color: var(--danger);
+  color: var(--save);
 }
 .sb-status.is-final {
   font-family: var(--display);
-  font-weight: 700;
-  font-size: 1.4rem;
-  letter-spacing: 0.01em;
-  color: var(--signal);
+  font-weight: 900;
+  font-size: 1.45rem;
+  letter-spacing: -0.01em;
+  color: var(--strike);
 }
 .sb-last {
   display: flex;
   gap: 18px;
-  padding: 12px 18px;
-  border-top: 1px solid var(--rule);
+  padding: 13px 18px;
+  border-top: 1px solid var(--edge);
 }
 .sb-last div {
   display: flex;
@@ -717,7 +809,7 @@ button {
 }
 .sb-last dt {
   font-size: 0.78rem;
-  color: var(--ink-dim);
+  color: var(--chalk-dim);
 }
 .sb-last dd {
   margin: 2px 0 0;
@@ -729,41 +821,41 @@ button {
   align-items: flex-end;
   gap: 5px;
   height: 40px;
-  padding: 12px 18px 6px;
-  border-top: 1px solid var(--rule);
+  padding: 13px 18px 6px;
+  border-top: 1px solid var(--edge);
 }
 .sb-mix i {
   flex: 1;
-  background: rgba(244, 247, 244, 0.28);
+  background: rgba(242, 245, 239, 0.26);
 }
 .sb-mix-cap,
 .sb-hint {
   font-size: 0.82rem;
-  color: var(--ink-dim);
+  color: var(--chalk-dim);
   margin: 0;
   padding: 0 18px 14px;
 }
 .sb-hint {
-  padding-top: 12px;
-  border-top: 1px solid var(--rule);
+  padding-top: 13px;
+  border-top: 1px solid var(--edge);
 }
 .sb-reset {
   display: block;
   width: 100%;
   border: 0;
-  border-top: 1px solid var(--rule);
+  border-top: 1px solid var(--edge);
   background: transparent;
-  color: var(--signal);
+  color: var(--strike);
   font-family: inherit;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.95rem;
-  padding: 13px;
+  padding: 14px;
   cursor: pointer;
   transition: background 0.12s, color 0.12s;
 }
 .sb-reset:hover:not(:disabled) {
-  background: var(--signal);
-  color: var(--pitch);
+  background: var(--strike);
+  color: var(--void);
 }
 .sb-reset:disabled {
   opacity: 0.4;
@@ -771,13 +863,13 @@ button {
 }
 
 .goal-text {
-  color: var(--signal);
+  color: var(--strike);
 }
 .save-text {
-  color: var(--danger);
+  color: var(--save);
 }
 
-/* ---------- payoff matrix (broadcast stats grid) ---------- */
+/* ---------- payoff matrix ---------- */
 .matrix-scroll {
   overflow-x: auto;
   margin-top: 12px;
@@ -790,58 +882,60 @@ button {
 }
 .matrix-table th,
 .matrix-table td {
-  border: 1px solid var(--rule);
+  border: 1px solid var(--edge);
   padding: 7px 10px;
   text-align: center;
   white-space: nowrap;
 }
 .matrix-table thead th,
 .matrix-table tbody th {
-  background: var(--panel-2);
-  color: var(--ink-dim);
+  background: var(--turf-2);
+  color: var(--chalk-dim);
   font-weight: 600;
 }
 .matrix-table .corner {
   text-align: left;
 }
 .matrix-table .edge {
-  color: var(--accent-2);
+  color: var(--reference);
 }
 .matrix-table td.saddle {
-  background: rgba(255, 210, 63, 0.16);
-  color: var(--signal);
+  background: rgba(255, 207, 51, 0.16);
+  color: var(--strike);
   font-weight: 700;
 }
 .matrix-table input {
   width: 58px;
-  background: var(--pitch);
-  border: 1px solid var(--rule);
-  color: var(--ink);
+  background: var(--void);
+  border: 1px solid var(--edge);
+  color: var(--chalk);
   padding: 4px 6px;
   text-align: center;
   font-family: inherit;
-  border-radius: 2px;
+  border-radius: 3px;
 }
 
 /* ---------- strategy bars ---------- */
 .strategy-bars h4 {
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 .strategy-row {
   display: grid;
   grid-template-columns: 100px 1fr 52px;
   align-items: center;
   gap: 10px;
-  margin: 6px 0;
+  margin: 7px 0;
 }
 .strategy-name {
   font-size: 0.82rem;
-  color: var(--ink-dim);
+  color: var(--chalk-dim);
 }
 .strategy-track {
   height: 8px;
-  background: var(--pitch);
-  border: 1px solid var(--rule);
+  background: var(--void);
+  border: 1px solid var(--edge);
+  border-radius: 2px;
+  overflow: hidden;
 }
 .strategy-fill {
   height: 100%;
@@ -855,14 +949,14 @@ button {
 
 /* ---------- bar chart ---------- */
 .barchart {
-  margin-top: 14px;
+  margin-top: 16px;
 }
 .barchart-plot {
   display: flex;
   align-items: flex-end;
   gap: 10px;
   padding: 16px 4px 0;
-  border-bottom: 1px solid var(--rule);
+  border-bottom: 1px solid var(--edge);
 }
 .barchart-group {
   flex: 1;
@@ -893,12 +987,12 @@ button {
   left: 50%;
   transform: translateX(-50%);
   font-size: 0.62rem;
-  color: var(--ink-dim);
+  color: var(--chalk-dim);
   white-space: nowrap;
 }
 .barchart-label {
   font-size: 0.7rem;
-  color: var(--ink-dim);
+  color: var(--chalk-dim);
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -909,9 +1003,9 @@ button {
   display: flex;
   gap: 16px;
   justify-content: center;
-  margin-top: 10px;
+  margin-top: 12px;
   font-size: 0.78rem;
-  color: var(--ink-dim);
+  color: var(--chalk-dim);
 }
 .barchart-legend i {
   display: inline-block;
@@ -927,23 +1021,23 @@ button {
   flex-wrap: wrap;
   align-items: flex-end;
   gap: 12px;
-  margin-top: 12px;
+  margin-top: 14px;
 }
 .sim-controls label {
   display: flex;
   flex-direction: column;
   gap: 5px;
   font-size: 0.8rem;
-  color: var(--ink-dim);
+  color: var(--chalk-dim);
 }
 .sim-controls input {
-  background: var(--pitch);
-  border: 1px solid var(--rule);
-  color: var(--ink);
+  background: var(--void);
+  border: 1px solid var(--edge);
+  color: var(--chalk);
   padding: 8px 10px;
   font-family: inherit;
   width: 150px;
-  border-radius: 2px;
+  border-radius: 3px;
 }
 .preset-row {
   display: flex;
@@ -956,12 +1050,15 @@ button {
 
 /* ---------- explanation ---------- */
 .explain .card h3 {
-  color: var(--signal);
+  color: var(--strike);
+}
+.explain .card h3::before {
+  background: var(--reference);
 }
 .explain p {
-  color: var(--ink);
+  color: var(--chalk);
   max-width: 68ch;
-  line-height: 1.65;
+  line-height: 1.68;
 }
 
 @media (max-width: 900px) {
@@ -969,8 +1066,8 @@ button {
   .two-col {
     grid-template-columns: 1fr;
   }
-  .masthead {
-    align-items: flex-start;
+  .eq-hero {
+    gap: 22px;
   }
 }
 
